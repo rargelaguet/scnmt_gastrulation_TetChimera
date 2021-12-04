@@ -1,0 +1,140 @@
+---
+title: "Sex determination based on DNA methylation coverage in the chromosome Y"
+---
+
+```{r load_modules, echo=FALSE, include=FALSE}
+library(ggpubr)
+```
+
+Define settings
+```{r define_opts, echo=FALSE}
+if (grepl("ricard",Sys.info()['nodename'])) {
+  source("/Users/ricard/scnmt_gastrulation_TetChimera//settings.R")
+} else {
+  stop("Computer not recognised")
+}
+io$stats.per.chr <- paste0(io$basedir,"/met/results/stats/stats_per_chromosome.txt.gz")
+io$outdir <- paste0(io$basedir,"/met/results/sex")
+
+# Define which chromosomes to look at
+opts$chr <- c("X","Y","1") %>% paste0("chr",.)
+```
+
+Update sample metadata
+```{r}
+sample_metadata <- sample_metadata %>% 
+  .[!is.na(id_met)]
+```
+
+# Load data
+
+Load DNA methylation statistics per chromosome
+```{r}
+stats <- fread(io$stats.per.chr) %>%
+  .[chr%in%opts$chr] %>%
+  merge(sample_metadata, by="id_met")
+```
+
+## Sex assignment per cell
+
+```{r}
+to.plot.cell <- stats %>% 
+  dcast(id_met+lineage~chr, value.var="nCG") %>%
+  .[,ratio:=chrY/chr1]
+```
+
+Define sex
+```{r}
+opts$female <- 0.01      # Less than this is female
+opts$male <- 0.01001    # More than this is male
+
+to.plot.cell$sex <- cut(to.plot.cell$ratio, 
+  breaks = c(-0.01,opts$female, opts$male,Inf),
+  labels = c("Female","Unassigned","Male")
+)
+```
+
+
+Plot ratio of coverage between chrY and chrX
+```{r}
+p <- ggbarplot(to.plot.cell, x="id_met", y="ratio", fill="sex", sort.val="asc") +
+  facet_grid(~lineage, scales="free_x", space = "free_x") +
+  labs(x="Embryo", y="ratio chrY/chr1 coverage") +
+  geom_hline(yintercept=opts$female, linetype="dashed") +
+  theme(
+    legend.title = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank()
+  )
+
+pdf(paste0(io$outdir,"/sex_assignment_met_per_cell.pdf"), width=12, height=5, useDingbats = F)
+print(p)
+dev.off()
+```
+
+
+## Sex assignment per embryo
+
+```{r}
+to.plot.embryo <- stats %>% 
+  .[!is.na(embryo),.(nCG=sum(nCG)), by=c("embryo","lineage","chr")] %>%
+  dcast(embryo+lineage~chr, value.var="nCG") %>%
+  .[,ratio:=chrY/chr1]
+```
+
+Define sex
+```{r}
+opts$female <- 0.01      # Less than this is female
+opts$male <- 0.01001    # More than this is male
+
+to.plot.embryo$sex <- cut(to.plot.embryo$ratio, 
+  breaks = c(-0.01,opts$female, opts$male,Inf),
+  labels = c("Female","Unassigned","Male")
+)
+```
+
+
+Plot ratio of coverage between chrY and chrX
+```{r}
+p <- ggbarplot(to.plot.embryo, x="embryo", y="ratio", fill="sex", sort.val="asc") +
+  facet_grid(~lineage, scales="free_x", space = "free_x") +
+  labs(x="Embryo", y="ratio chrY/chr1 coverage") +
+  geom_hline(yintercept=opts$female, linetype="dashed") +
+  theme(
+    legend.title = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank()
+  )
+
+pdf(paste0(io$outdir,"/sex_assignment_met_per_embryo.pdf"), width=8, height=5, useDingbats = F)
+print(p)
+dev.off()
+```
+
+## Compare assignments per embryo and cell
+
+```{r}
+foo <- to.plot.embryo[,c("embryo","sex")] %>% 
+  setnames("sex","sex_per_embryo") %>%
+  merge(sample_metadata[,c("id_met","embryo")])
+
+bar <- to.plot.cell[,c("id_met","sex")] %>% 
+  setnames("sex","sex_per_cell") %>%
+  merge(sample_metadata[,c("id_met","embryo")])
+
+foobar <- merge(foo,bar,by=c("id_met","embryo"), all=TRUE)
+
+foobar[sex_per_embryo!=sex_per_cell,sex]
+```
+
+
+## Save results
+
+```{r}
+sample_metadata <- fread(io$metadata) %>% 
+  merge(to.plot.cell[,c("id_met","sex")], by="id_met",all.x=TRUE) %>%
+  .[,c("sample","id_met","id_acc", "lineage", "embryo", "sex")]
+
+fwrite(sample_metadata, io$metadata, sep="\t", quote=FALSE, na="NA")
+```
+

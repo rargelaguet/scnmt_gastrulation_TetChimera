@@ -1,0 +1,117 @@
+---
+title: "Box plots of chromatin accessibility levels"
+---
+
+```{r load_modules, echo=FALSE, include=FALSE}
+library(data.table)
+library(purrr)
+library(ggplot2)
+library(ggpubr)
+```
+
+<!-- Define I/O and options -->
+```{r define_opts, echo=FALSE}
+if (grepl("ricard",Sys.info()['nodename'])) {
+  source("/Users/ricard/scnmt_gastrulation_TetChimera/acc/boxplots/load_settings.R")
+  # source("/Users/ricard/scnmt_gastrulation_TetChimera/metacc/boxplots/utils.R")
+} else {
+  stop("Computer not recognised")
+}
+
+# Size of figures
+# opts$width = 10
+# opts$height = 5
+```
+
+<!-- Load methylation data -->
+```{r load_data, echo=FALSE, include=FALSE}
+# acc_dt <- lapply(names(opts$acc.annos), function(n) {
+acc_dt <- lapply(opts$acc.annos, function(n) {
+  fread(
+    file = sprintf("%s/%s.tsv.gz",io$acc_data_parsed,n),
+    showProgress = F, header = F,
+    select = c("V1"="factor","V2"="character","V3"="factor","V4"="integer","V5"="integer","V6"="integer")
+    ) %>% .[V1%in%sample_metadata$id_acc] %>% droplevels
+}) %>% rbindlist %>% setnames(c("id_acc","id","anno","Nmet","Ntotal","rate"))
+```
+
+<!-- Merge data with metadata -->
+```{r merge}
+acc_dt <- merge(acc_dt, sample_metadata[,c("id_acc","stage","stage_lineage")], by="id_acc")
+```
+
+<!-- Load results from the differential analysis -->
+```{r}
+# diff.acc <- lapply(names(opts$acc.annos), function(x)
+#   # fread(sprintf("%s/E56ICM_vs_E56TE_%s.txt.gz",io$diff.acc,x)) %>% .[,anno:=as.factor(x)]
+#   fread(sprintf("%s/E6ICM_vs_E6TE_%s.txt.gz",io$diff.acc,x)) %>% .[,anno:=as.factor(x)]
+# ) %>% rbindlist %>%
+#   .[,sig:=padj_fdr<opts$min.fdr & abs(diff)>opts$min.acc.diff] %>%
+#   .[,c("id","anno","diff","sig")]
+```
+
+<!-- Subset data using the significant hits -->
+
+```{r}
+# diff.acc <- diff.acc[diff>0]
+# diff.acc <- diff.acc[diff<0]
+
+# acc_dt_sub <- acc_dt %>% split(.$anno) %>%
+#   map2(.,names(.), function(x,y) x[id%in%diff.acc[sig==T & anno==y,id]]) %>%
+#   rbindlist %>% droplevels
+```
+
+<!-- Filter by minimum number of measurements per cell -->
+```{r}
+# opts$min.acc.observations <- 10
+# acc_dt_sub <- acc_dt_sub[,N:=.N, by=c("sample","stage_lineage","anno")] %>%
+#   .[N>=opts$min.acc.observations] %>% .[,N:=NULL]
+```
+
+<!-- Regress out differences in global methylation or accessibility rate -->
+```{r}
+# foo <- fread(io$acc.stats) %>% .[,c("id_acc","mean")]
+# acc_dt_sub <- acc_dt_sub %>% merge(foo, by="id_acc") %>%
+#   .[,new_rate:=mean(rate) + lm(formula=rate~mean)[["residuals"]], by=c("id","anno")]
+```
+
+<!-- Boxplots with methylation rate per genomic context and stage_lineage -->
+
+```{r}
+to.plot <- acc_dt %>%
+  .[,.(
+    rate = 100*(sum(Nmet)/sum(Ntotal)), 
+    Nmet = sum(Nmet), 
+    Ntotal = sum(Ntotal)
+  ),by=c("id_acc","stage_lineage","anno")]# %>% .[,anno:=stringr::str_replace_all(anno,opts$acc.annos)]
+  # .[,stage_lineage:=factor(stage_lineage, levels=names(colors))]
+```
+
+```{r}
+p <- ggplot(to.plot, aes(x=stage_lineage, y=rate)) +
+  geom_boxplot(outlier.shape=NA, coef=1) +
+  # geom_boxplot(aes(fill=stage_lineage), outlier.shape=NA, coef=1) +
+  # scale_fill_manual(values=colors) +
+  labs(x="", y="Accessibility (%)") +
+  facet_wrap(~anno, nrow=1, scales="fixed") +
+  # coord_cartesian(ylim=c(0,50)) +
+  theme_bw() +
+  # guides(color=F, fill=F) +
+  # theme_pb() +
+  theme(
+    strip.background = element_rect(fill="#00BFC4"),
+    axis.text.x = element_text(size=rel(1.0), color="black", angle=40, vjust=1, hjust=1),
+    # axis.text.y = element_text(size=rel(1.2), color="black"),
+    # axis.title.y = element_text(size=rel(1.4), color="black"),
+    # strip.background = element_rect(fill="#F37A71"),
+    # strip.text = element_text(size=rel(1.8), color="black"),
+    # legend.position="top",
+    # legend.title = element_blank()
+  )
+
+print(p)
+
+# pdf(paste0(io$outdir,"/boxplots_met2.pdf"), useDingbats = F, onefile = F, width=14, height=6)
+# print(p)
+# dev.off()
+```

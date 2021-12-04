@@ -1,0 +1,88 @@
+---
+title: "Heatmaps of DNA accessibility levels"
+---
+
+```{r load_modules, echo=FALSE, include=FALSE}
+library(pheatmap)
+library(RColorBrewer)
+```
+
+
+Load default settings
+```{r}
+if (grepl("ricard",Sys.info()['nodename'])) {
+  source("/Users/ricard/scnmt_gastrulation_TetChimera/settings.R")
+} else if (grepl("ebi",Sys.info()['nodename'])) {
+  source("/homes/ricard/scnmt_gastrulation_TetChimera/settings.R")
+} else {
+  stop("Computer not recognised")
+}
+```
+
+Define I/O
+```{r}
+io$outdir <- paste0(io$basedir,"/acc/results/heatmap")
+```
+
+Define options
+```{r}
+opts$lineages <- c(
+  "Zygote", 
+  "2cell", 
+  "4cell", 
+  "8cell", 
+  "Morula", 
+  "ICM", 
+  "TE",
+  "hESC"
+)
+
+opts$annos <- NULL
+if (is.null(opts$annos)) {
+  opts$annos <- list.files(io$acc_data_parsed.pseudobulk, pattern=".tsv.gz") %>% gsub(".tsv.gz","",.)
+}
+```
+
+
+Load accessibility data
+```{r load_data, echo=FALSE, include=FALSE}
+acc_dt <- lapply(opts$annos, function(n) {
+  fread(
+    file = sprintf("%s/%s.tsv.gz",io$acc_data_parsed.pseudobulk,n),
+    showProgress = F, header = F,
+    select = c("V1"="factor","V2"="character","V3"="factor","V4"="integer","V5"="integer","V6"="integer")
+    ) %>% .[V1%in%opts$lineages]
+}) %>% rbindlist %>% setnames(c("lineage","id","anno","Nmet","Ntotal","rate"))
+```
+
+```{r}
+# unique(acc_dt$lineage)
+```
+
+```{r}
+acc_dt.summarised <- acc_dt[,.(rate=mean(rate)),by=c("lineage","anno")]
+```
+
+Save
+```{r}
+fwrite(acc_dt.summarised, paste0(io$outdir,"/heatmap_acc_pseudobulk.tsv.gz"), sep="\t")
+```
+
+# Plot
+
+```{r}
+to.plot <- acc_dt.summarised %>%
+  .[,lineage:=factor(lineage,levels=opts$lineages)] %>%
+  dcast(lineage~anno, value.var="rate") %>%
+  matrix.please
+```
+
+
+```{r}
+pdf(paste0(io$outdir,"/heatmap_acc_pseudobulk.pdf"), useDingbats = F, onefile = F, width=16, height=7)
+pheatmap(to.plot, 
+  color = colorRampPalette(rev(brewer.pal(n=7, name ="Blues")))(100),
+  cluster_rows = FALSE,
+)
+dev.off()
+```

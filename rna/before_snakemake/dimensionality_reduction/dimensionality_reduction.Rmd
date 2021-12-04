@@ -1,0 +1,185 @@
+---
+title: "Dimensionality reduction on RNA data"
+---
+  
+```{r load_modules, echo=FALSE, include=FALSE}
+# library(scater)
+# library(RColorBrewer)
+# library(umap)
+```
+
+# Define settings
+
+Define I/O
+```{r define_io, echo=FALSE}
+source("/Users/ricard/scnmt_gastrulation_TetChimera/settings.R")
+io$outdir <- paste0(io$basedir,"/rna/results/dimensionality_reduction")
+```
+
+Define options
+```{r}
+opts$plates <- c(
+  "tet_chimera_march20_plate1"
+  # "tet_chimera_march20_plate2",
+  # "tet_chimera_march20_plate3",
+  # "tet_chimera_march20_plate4",
+  # "tet_chimera_march20_plate5",
+  # "tet_chimera_march20_plate6"
+)
+```
+
+Update sample metadata
+```{r}
+sample_metadata <- sample_metadata %>% .[pass_rnaQC==T] %>% .[plate%in%opts$plates]
+
+# Erythroid cells from the host
+# sample_metadata <- sample_metadata %>% 
+#   .[tdTOM==FALSE & CD41==TRUE & is.na(KDR)]
+
+# # Blood progenitors from the host
+# sample_metadata <- sample_metadata %>% 
+#   .[tdTOM==FALSE & is.na(CD41) & KDR==TRUE]
+# 
+# # Blood progenitors from the TET TKO chimera
+# sample_metadata <- sample_metadata %>% 
+#   .[tdTOM==TRUE & is.na(CD41) & KDR==TRUE]
+# 
+# # Control cells for the host
+# sample_metadata <- sample_metadata %>% 
+#   .[tdTOM==FALSE & is.na(CD41) & is.na(KDR)]
+# 
+# # Control cells for the TET TKO chimera
+# sample_metadata <- sample_metadata %>% 
+#   .[tdTOM==TRUE & is.na(CD41) & is.na(KDR)]
+```
+
+```{r}
+# foo <- fread("/Users/ricard/data/scnmt_gastrulation_TetChimera/rna/results/iterative_mapping/tet_chimera_march20_plate1_standard_mnn.txt.gz") %>% setnames("cell","id_rna") %>% .[,celltype_mapped:=stringr::str_replace_all(celltype_mapped," ", "_")]
+foo <- fread("/Users/ricard/data/scnmt_gastrulation_TetChimera/rna/results/iterative_mapping/tet_chimera_march20_plate1_iterative_mnn.txt.gz") %>% setnames("cell","id_rna") %>% .[,celltype_mapped:=stringr::str_replace_all(celltype_mapped," ", "_")]
+sample_metadata <- sample_metadata %>% merge(foo,by="id_rna")
+```
+
+Load RNA expression data
+```{r load_data, echo=FALSE}
+sce <- readRDS(io$sce)[,sample_metadata$id_rna]
+```
+
+Parse RNA expression data
+```{r}
+rownames(sce) <- rowData(sce)$symbol
+```
+
+Select HVG
+```{r}
+decomp <- modelGeneVar(sce)
+decomp <- decomp[decomp$mean > 0.1,]
+hvgs <- rownames(decomp)[decomp$p.value <= 0.01]
+```
+
+Subset SingleCellExperiment
+```{r}
+sce_filt <- sce[hvgs,]
+```
+
+
+Regress out covariates
+```{r}
+data <- scale(t(logcounts(sce_filt)), center = T, scale = F)
+# data_regressed <- apply(data, 2, function(x) {
+#   lm.out <- lm(formula=expr~covariate, data=data.frame(expr=x, covariate=factor(sce_filt$stage)));
+#   residuals <- lm.out[["residuals"]]+lm.out[["coefficients"]][1]
+# })
+```
+
+Run PCA
+```{r}
+npcs <- 15
+reducedDim(sce_filt, "PCA") <- irlba::prcomp_irlba(data, n=npcs)$x[,1:npcs]
+```
+
+```{r}
+cor(colMeans(counts(sce_filt)>0), reducedDim(sce_filt,"PCA"))
+```
+
+
+Plot PCA
+```{r}
+# plotPCA(sce_filt, colour_by="plate", ncomponents = c(3,4))# +
+  # scale_fill_manual(values=opts$celltype.colors)
+```
+
+Run UMAP
+```{r}
+set.seed(42)
+sce_filt <- runUMAP(sce_filt, dimred="PCA", n_neighbors = 35, min_dist = 0.45)
+reducedDim(sce, "UMAP") <- reducedDim(sce_filt, "UMAP") 
+```
+
+Plot UMAP coloured by sample covariates
+
+```{r}
+umap.dt <- reducedDim(sce_filt,"UMAP") %>% as.data.table %>% 
+  .[,id_rna:=colnames(sce_filt)] %>% 
+  merge(sample_metadata, by="id_rna")
+```
+
+```{r}
+p <- ggplot(umap.dt, aes(x=V1, y=V2, fill=celltype_mapped)) +
+  geom_point(size=2, shape=21) +
+  # scale_color_manual(values=opts$stage.colors) +
+  scale_fill_manual(values=opts$celltype.colors) +
+  theme_classic() +
+  theme(
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position="right",
+    legend.title=element_blank()
+  )
+
+# pdf(paste0(io$outdir,"/rna_umap.pdf"), width=5, height=3, useDingbats = F)
+print(p)
+# dev.off()
+```
+
+Plot UMAP coloured by gene expression
+```{r}
+# genes.to.plot <- c("Kdr","Itga2b")
+
+# Erythroid
+# genes.to.plot <- c("Slc4a1","Hemgn","Cldn13","Hbb-bh1","Hba-x","Hba-a1")
+
+# Endothelium
+genes.to.plot <- c("Mest","Vim","Crip2")
+
+
+for (i in 1:length(genes.to.plot)) {
+  gene <- genes.to.plot[i]
+  print(sprintf("%s/%s: %s",i,length(genes.to.plot),gene))
+  
+  # Create data.table to plot
+  to.plot <- data.table(
+    id_rna = colnames(sce),
+    expr = logcounts(sce[gene,])[1,]
+  ) %>% merge(umap.dt, by="id_rna")
+
+  # Plot
+  p <- ggplot(to.plot, aes_string(x="V1", y="V2", fill="expr")) +
+    geom_point(size=2, shape=21) +
+    scale_fill_gradient(gene, low = "gray80", high = "red") +
+    theme_classic() +
+    theme(
+      axis.title = element_blank(),
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      legend.position="right"
+    )
+    
+  # pdf(sprintf("%s/%s.pdf",io$outdir,i), width=8, height=3.5, useDingbats = F)
+  # ggsave("ggtest.png", width = 3.25, height = 3.25, dpi = 1200)
+  # jpeg(sprintf("%s/%s.jpeg",io$outdir,gene), width = 1300, height = 400)
+  print(p)
+  # dev.off()
+}
+```
+

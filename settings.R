@@ -1,6 +1,9 @@
+suppressPackageStartupMessages(library(SingleCellExperiment))
 suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(purrr))
 suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(ggpubr))
+suppressPackageStartupMessages(library(stringr))
 
 #########
 ## I/O ##
@@ -10,19 +13,54 @@ io <- list()
 if (grepl("ricard",Sys.info()['nodename'])) {
   io$basedir <- "/Users/ricard/data/scnmt_gastrulation_TetChimera"
   io$atlas.basedir <- "/Users/ricard/data/gastrulation10x"
-  io$gene_metadata <- "/Users/ricard/data/ensembl/mouse/v87/BioMart/all_genes/Mmusculus_genes_BioMart.87.txt"
+  # io$gene_metadata <- "/Users/ricard/data/ensembl/mouse/v87/BioMart/all_genes/Mmusculus_genes_BioMart.87.txt"
 } else if (grepl("ebi",Sys.info()['nodename'])) {
   io$basedir <- "/hps/nobackup2/research/stegle/users/ricard/scnmt_gastrulation_TetChimera"
   io$atlas.basedir <- "/hps/nobackup2/research/stegle/users/ricard/gastrulation10x"
-  io$gene_metadata <- "/hps/nobackup2/research/stegle/users/ricard/ensembl/mouse/v87/BioMart/all_genes/Mmusculus_genes_BioMart.87.txt"
+  # io$gene_metadata <- "/hps/nobackup2/research/stegle/users/ricard/ensembl/mouse/v87/BioMart/all_genes/Mmusculus_genes_BioMart.87.txt"
+} else if (Sys.info()[['nodename']]=="BI2404M") {
+  io$basedir <- "/Users/argelagr/data/tet_chimera_nmtseq"
+  io$atlas.basedir <- "/Users/argelagr/data/gastrulation10x"
+} else if (grepl("bi2228m", tolower(Sys.info()["nodename"]))){
+  io$basedir <- "/Users/clarks/data/nmt_tet_chimera"
+} else if (grepl("pebble|headstone", Sys.info()['nodename'])) {
+  if (grepl("Clark", Sys.info()['effective_user'])) {
+    io$basedir       <- "/bi/scratch/Stephen_Clark/multiome/resilio"
+  } else if (grepl("argelag", Sys.info()['effective_user'])) {
+    io$basedir <- "/bi/scratch/Stephen_Clark/tet_chimera_nmtseq/"
+    io$atlas.basedir <- "/bi/group/reik/ricard/data/pijuansala2019_gastrulation10x"
+  }
 } else {
   stop("Computer not recognised")
 }
 
+# Metadata
 io$metadata <- paste0(io$basedir,"/sample_metadata.txt.gz")
-io$seurat <- paste0(io$basedir,"/rna/seurat.rds")
-io$sce <- paste0(io$basedir,"/rna/SingleCellExperiment.rds")
-io$rna.counts <- paste0(io$basedir,"/rna/counts.tsv.gz")
+io$gene_metadata <- paste0(io$basedir, "/features/gene_metadata/Mmusculus_genes_BioMart.87.txt")
+
+# RNA
+# io$rna.sce <- paste0(io$basedir,"/rna/SingleCellExperiment.rds")
+io$rna.sce <- paste0(io$basedir,"/rna/SingleCellExperiment.rds")
+# io$rna.counts <- paste0(io$basedir,"/rna/counts.tsv.gz")
+io$rna.diff <- paste0(io$basedir,"/rna/results/differential/lineages")
+io$rna.stats <- paste0(io$basedir,"/rna/results/stats/rna_stats.txt.gz")
+
+
+# Methylation
+io$met_data_raw <- paste0(io$basedir,"/met/cpg_level")
+io$met_data_raw.pseudobulk <- paste0(io$met_data_raw,"/pseudobulk")
+io$met_data_parsed <- paste0(io$basedir,"/met/feature_level")
+io$met_data_parsed.pseudobulk <- paste0(io$met_data_parsed,"/pseudobulk")
+io$met.stats <- paste0(io$basedir,"/met/results/stats/sample_stats.txt")
+io$met.diff <- paste0(io$basedir,"/met/results/differential/feature_level/lineages")
+
+# Accessibility
+io$acc_data_raw <- paste0(io$basedir,"/acc/gpc_level")
+io$acc_data_parsed <- paste0(io$basedir,"/acc/feature_level")
+io$acc_data_raw.pseudobulk <- paste0(io$acc_data_raw,"/pseudobulk")
+io$acc_data_parsed.pseudobulk <- paste0(io$acc_data_parsed,"/pseudobulk")
+io$acc.stats <- paste0(io$basedir,"/acc/results/stats/sample_stats.txt")
+io$acc.diff <- paste0(io$basedir,"/acc/results/differential/feature_level/lineages")
 
 # Atlas information
 io$atlas.metadata <- paste0(io$atlas.basedir,"/sample_metadata.txt.gz")
@@ -119,23 +157,36 @@ opts$celltype.colors = c(
 )
 
 opts$plates <- c(
-  "tet_chimera_march20_plate1",
-  "tet_chimera_march20_plate2",
-  "tet_chimera_march20_plate3",
-  "tet_chimera_march20_plate4",
-  "tet_chimera_march20_plate5",
-  "tet_chimera_march20_plate6"
+	# "tet_chimera_march20_plate1",
+	# "tet_chimera_march20_plate2",
+	# "tet_chimera_march20_plate3",
+	# "tet_chimera_march20_plate4",
+	# "tet_chimera_march20_plate5",
+	# "tet_chimera_march20_plate6"
+	"E7.5_tet_chimera_plate3",
+	"E7.5_tet_crispr_plate5",
+	"E7.5_tet_crispr_plate6",
+	"E8.5_oct20_plate1",
+	"E8.5_oct20_plate7",
+	"E8.5_oct20_plate5",
+	"E8.5_oct20_plate3",
+	"E8.5_oct20_plate4",
+	"E8.5_oct20_plate6",
+	"E8.5_oct20_plate2",
+	"E8.5_oct20_plate8"
+
 )
 
-
-##########################
-## Load sample metadata ##
-##########################
-
-sample_metadata <- fread(io$metadata) #%>% .[pass_QC==T] %>%
-#   .[,celltype.mapped:=stringr::str_replace_all(celltype.mapped," ","_")] %>%
-#   .[,celltype.mapped:=stringr::str_replace_all(celltype.mapped,"/","_")]
-
-# table(sample_metadata$plate)
-# table(sample_metadata$stage)
-# table(sample_metadata$tdTOM)
+opts$samples <- c(
+	"E7.5_TET_TKO_KDR+",
+	"E7.5_TET_TKO_crispr_rep1",
+	"E7.5_TET_TKO_crispr_rep2",
+	"E8.5_WT_rep1",
+	"E8.5_WT_rep2",
+	"E8.5_WT_CD41+_rep1",
+	"E8.5_WT_CD41+_rep2",
+	"E8.5_TET_TKO_KDR+_CD41+_rep1",
+	"E8.5_TET_TKO_KDR+_CD41+_rep2",
+	"E8.5_TET_TKO_KDR+_rep1",
+	"E8.5_TET_TKO_KDR+_rep2"
+)

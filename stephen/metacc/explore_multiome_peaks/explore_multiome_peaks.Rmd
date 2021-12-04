@@ -1,0 +1,455 @@
+---
+title: ""
+---
+
+# Define settings
+
+Load default settings
+```{r echo=TRUE, include=FALSE}
+source(here::here("settings.R"))
+```
+
+I/O
+```{r}
+io$outdir <- paste0(io$basedir,"/metacc/exploration/multiome_peaks")
+```
+
+Options
+```{r}
+opts$stage_lineage <- c(
+  "E3.5_ICM",
+  "E4.5_Epiblast",
+  "E4.5_Primitive_endoderm",
+  "E5.5_Epiblast",
+  "E5.5_Visceral_endoderm",
+  "E6.5_Epiblast",
+  "E6.5_Visceral_endoderm",
+  "E6.5_Primitive_Streak",
+  # "E6.5_ExE_ectoderm",
+  "E7.5_Epiblast",
+  "E7.5_Primitive_Streak",
+  "E7.5_Ectoderm",
+  "E7.5_Mesoderm",
+  "E7.5_Endoderm"
+)
+# Define genomic contexts
+opts$annos <- c(
+  "multiome_peaks"
+)
+# opts$colors <- c(
+#   "E4.5_Epiblast"="#C1CDCD",
+#   "E5.5_Epiblast"="#C1CDCD",
+#   "E6.5_Epiblast"="#C1CDCD",
+#   "E7.5_Epiblast"="#C1CDCD",
+#   "E7.5_Ectoderm"="steelblue",
+#   "E6.5_Primitive_Streak"="sandybrown",
+#   "E7.5_Primitive_Streak"="sandybrown",
+#   "E7.5_Endoderm"="#43CD80",
+#   "E7.5_Mesoderm"="#CD3278",
+#   "E6.5_ExE_ectoderm"="black"
+# )
+```
+
+# Load sample metadata
+
+```{r}
+# sample_metadata <- fread(io$metadata) %>% 
+#   .[,stage_lineage:=paste(stage,lineage10x_2,sep="_")] %>%
+#   .[stage_lineage%in%opts$stage_lineage] %>%
+#   .[pass_metQC==TRUE | pass_accQC==TRUE] %>%
+#   droplevels
+# sample_metadata %>%
+#   .[,c("stage","stage_lineage"):=list(factor(stage,levels=opts$stages), factor(stage_lineage,levels=opts$stage_lineage))]
+# table(sample_metadata$lineage10x)
+
+
+sample_metadata <- fread(io$metadata)%>%
+   .[pass_metQC==TRUE | pass_accQC==TRUE] %>% 
+  .[!is.na(celltype.mapped)]
+
+# merge subclasses of celltypes
+sample_metadata <- sample_metadata[, celltype.mapped := gsub("[1-9]", "", celltype.mapped)]%>% 
+   .[,stage_lineage := paste(stage, celltype.mapped, sep="_")] 
+celltypes <- sample_metadata[, unique(celltype.mapped)]
+```
+
+
+
+# Load data 
+
+# Load global stats per cell
+
+```{r}
+acc.stats <- fread(io$acc.stats) %>% .[,c("id_acc","mean")] %>% .[,context:="GC"]
+met.stats <- fread(io$met.stats) %>% .[,c("id_met","mean")] %>% .[,context:="CG"]
+```
+
+## Load marker peaks from the Multiome 10x data set
+
+```{r}
+io$markerPeaks <- "/bi/scratch/Stephen_Clark/tet_chimera_nmtseq/features/filt/marker_peaks.txt.gz"
+marker_peaks.dt <- fread(io$markerPeaks) %>% setnames("idx","id") 
+
+# merge subclasses of celltypes
+marker_peaks.dt[, celltype := gsub("[1-9]", "", celltype)]
+marker_peaks.dt[, unique(celltype)]
+
+# ?? could remove celltypes we don't have from this ??
+
+head(marker_peaks.dt)
+
+
+
+```
+
+
+## Load differential results from the Multiome 10x data set
+
+```{r}
+# io$archR.diff.dir <- "/Users/ricard/data/gastrulation_multiome_10x/results/atac/archR/differential/PeakMatrix"
+# 
+# opts$matrix <- "PeakMatrix"
+# opts$min.MeanDiff <- 0.1
+# opts$min.FDR <- 1e-1
+# opts$celltypes <- c("Gut","Def._endoderm")
+# 
+# file <- sprintf("%s/%s_%s_vs_%s.txt.gz", io$archR.diff.dir,opts$matrix,opts$celltypes[1],opts$celltypes[2])
+# multiome_diff.dt <- fread(file, select = c(1,2,3)) %>% 
+#   setnames("idx","id") %>%
+#   .[,c("celltypeA","celltypeB"):=list(as.factor(opts$celltypes[1]),as.factor(opts$celltypes[2]))] %>%
+#   .[,sig:=FDR<opts$min.FDR & abs(MeanDiff)>=opts$min.MeanDiff] %>%
+#   .[,sign:=sprintf("Up in %s",opts$celltypes[1])] %>% 
+#   .[MeanDiff<0,sign:=sprintf("Up in %s",opts$celltypes[2])] %>%
+#   .[,sign:=as.factor(sign)] %>%
+#   setorder(-sig,FDR,na.last = T)
+# 
+# multiome_diff.dt[,sum(sig),by=c("celltypeA","celltypeB","sign")]
+```
+
+## Load feature metadata
+
+```{r}
+feature_metadata <- lapply(opts$annos, function(i) 
+  fread(
+    file = sprintf("%s/%s.bed.gz",io$features.dir,i), 
+    select = c("V1"="character", "V2"="integer", "V3"="integer","V5"="character","V6"="factor"))
+) %>% rbindlist %>% setnames(c("chr","start","end","id","anno")) 
+
+if (!feature_metadata[1, chr %like% "chr"]) feature_metadata[, chr := paste0("chr", chr)]
+
+feature_metadata[,idx:=sprintf("%s:%s-%s",chr,start,end)]
+
+head(feature_metadata)
+```
+
+## Load methylation data
+
+```{r load_metdata, echo=FALSE, include=FALSE}
+# met_dt <- lapply(opts$annos, function(n) {
+#   fread(
+#     sprintf("%s/%s.tsv.gz",io$met_data_parsed,n),
+#     showProgress = F, header = F,
+#     select = c("V1"="factor","V2"="character","V3"="factor","V4"="integer","V5"="integer","V6"="integer")
+#     ) %>% .[V1%in%opts$met.cells] %>% droplevels
+# }) %>% rbindlist %>% setnames(c("id_met","id","anno","Nmet","Ntotal","rate"))
+
+
+met_dt <- paste0(io$met_data_parsed, "/", opts$annos, ".tsv.gz") %>% 
+  map(fread) %>% 
+  rbindlist()
+
+
+```
+
+## Load accessibility data
+
+```{r load_accdata, echo=FALSE, include=FALSE}
+# acc_dt <- lapply(opts$annos, function(n) {
+#   fread(
+#     sprintf("%s/%s.tsv.gz",io$acc_data_parsed,n),
+#     showProgress = F, header = F,
+#     select = c("V1"="factor","V2"="character","V3"="factor","V4"="integer","V5"="integer","V6"="integer")
+#     ) %>% .[V1%in%opts$acc.cells] %>% droplevels
+# }) %>% rbindlist %>% setnames(c("id_acc","id","anno","Nmet","Ntotal","rate"))
+
+acc_dt <- paste0(io$acc_data_parsed, "/", opts$annos, ".tsv.gz") %>% 
+  map(fread) %>% 
+  rbindlist()
+
+
+```
+
+# Fix my stupid errors
+
+```{r}
+# met_dt <- met_dt %>% 
+#   merge(feature_metadata[,c("id","idx")], by="id") %>% 
+#   .[,id:=NULL] %>% setnames("idx","id")
+# acc_dt <- acc_dt %>% 
+#   merge(feature_metadata[,c("id","idx")], by="id") %>% 
+#   .[,id:=NULL] %>% setnames("idx","id")
+# feature_metadata %>% 
+#   .[,id:=NULL] %>% setnames("idx","id")
+# stopifnot(unique(met_dt$id) %in% feature_metadata$id)
+# stopifnot(unique(acc_dt$id) %in% feature_metadata$id)
+```
+
+# Filter features
+
+```{r}
+# met_dt.filt <- met_dt %>% merge(multiome_diff.dt[sig==T,c("id","sign")], by="id")
+# acc_dt.filt <- acc_dt %>% merge(multiome_diff.dt[sig==T,c("id","sign")], by="id")
+```
+
+```{r}
+met_dt.filt <- merge(
+  met_dt,
+  marker_peaks.dt[,c("id","celltype","score")], 
+  by="id"
+)
+
+acc_dt.filt <- merge(
+  acc_dt, 
+  marker_peaks.dt[,c("id","celltype","score")], 
+  by="id"
+)
+```
+
+```{r}
+length(unique(met_dt.filt$id))
+length(unique(acc_dt.filt$id))
+```
+
+
+# Plot
+
+## Boxplots of (absolute) methylation rates 
+
+```{r}
+# to.plot <- met_dt.filt %>%
+#   .[,.(rate=100*(sum(Nmet)/sum(Ntotal))),by=c("id_rna","stage_lineage","anno","sign")] %>%
+#   .[,stage_lineage:=factor(stage_lineage, levels=opts$stage_lineage)]
+# 
+# met_dt <- merge(met_dt, sample_metadata[,c("id_met","id_rna","stage_lineage")], by="id_met")
+
+cols <- c(
+  "stage_lineage",
+  "class",
+  "cg_files",
+  "gc_files",
+  "tdTOM",
+  "KDR-Cy7",
+  "CD41-BV421"
+)
+
+to.plot_met <- merge(
+  met_dt.filt,
+  sample_metadata[, .(stage_lineage, class, cell = gsub(".tsv.gz", "", basename(cg_files)))],
+  by = "cell"
+) %>% 
+  .[, .(rate = mean(rate)), .(cell, stage_lineage, anno, celltype, class)]
+
+
+# filter out feature sets that don't match cell types we have
+celltypes <- sample_metadata[, unique(celltype.mapped)] %>% .[!is.na(.)]
+
+to.plot_met <- to.plot_met[celltype %in% celltypes]
+
+to.plot_met <- merge(
+  to.plot_met, 
+  met.stats[, .(cell = id_met, mean)],
+  by = "cell"
+) %>% 
+  .[, scaled := rate / (100*mean)]
+
+##########################################################
+
+# repeat for accessibility
+
+to.plot_acc <- merge(
+  acc_dt.filt,
+  sample_metadata[, .(stage_lineage, class, cell = gsub(".tsv.gz", "", basename(gc_files)))],
+  by = "cell"
+) %>% 
+  .[, .(rate = mean(rate)), .(cell, stage_lineage, anno, celltype, class)]
+
+
+# filter out feature sets that don't match cell types we have
+
+to.plot_acc <- to.plot_acc[celltype %in% celltypes]
+
+to.plot_acc <- merge(
+  to.plot_acc, 
+  acc.stats[, .(cell = id_acc, mean)],
+  by = "cell"
+) %>% 
+  .[, scaled := rate / (100*mean)]
+
+
+
+
+
+```
+
+```{r}
+
+
+# features_sub <- c(
+#   "Cardiomyocytes",
+#   "Erythroid",
+#   "Forebrain_Midbrain_Hindbrain" ,
+#   "Gut",
+#   "ExE_endoderm"
+# )
+
+lineages_sub <- to.plot_met[, length(unique(cell)), stage_lineage] %>% 
+  .[V1 >= 20, stage_lineage]
+
+features_sub <- gsub("E[1-9].5_", "", lineages_sub)
+
+p <- ggplot(to.plot_met[celltype %in% features_sub & stage_lineage %in% lineages_sub], aes(x = stage_lineage, y = rate, fill = class)) +
+  geom_boxplot(outlier.shape=NA, coef=1) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.5), size = 0.1, alpha = 0.2) +
+  labs(x="", y="Methylation") +
+  facet_wrap(~celltype, scales="fixed") +
+  #scale_fill_manual(values=opts$colors) +
+  # coord_cartesian(ylim=c(5,60)) +
+  theme_bw() +
+  guides(x = guide_axis(angle = 90)) +
+  theme(
+    #legend.position = "none",
+    axis.text = element_text(color="black")
+  )
+# pdf(paste0(io$outdir,"/boxplots_acc_top250.pdf"), width=opts$width, height=opts$height/1.5)
+print(p)
+
+dir.create(io$outdir, recursive = TRUE)
+cowplot::save_plot(paste0(io$outdir, "/met_boxplots.pdf"), p, base_height = 20, base_width = 20)
+
+# dev.off()
+```
+
+
+
+
+```{r}
+
+
+p <- ggplot(to.plot_acc[celltype %in% features_sub & stage_lineage %in% lineages_sub], aes(x = stage_lineage, y = rate, fill = class)) +
+  geom_boxplot(outlier.shape=NA, coef=1) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.5), size = 0.1, alpha = 0.2) +
+  labs(x="", y="Accessibility") +
+  facet_wrap(~celltype, scales="fixed") +
+  #scale_fill_manual(values=opts$colors) +
+  # coord_cartesian(ylim=c(5,60)) +
+  theme_bw() +
+  guides(x = guide_axis(angle = 90)) +
+  theme(
+    #legend.position = "none",
+    axis.text = element_text(color="black")
+  )
+# pdf(paste0(io$outdir,"/boxplots_acc_top250.pdf"), width=opts$width, height=opts$height/1.5)
+print(p)
+
+dir.create(io$outdir, recursive = TRUE)
+cowplot::save_plot(paste0(io$outdir, "/acc_boxplots.pdf"), p, base_height = 20, base_width = 20)
+
+# dev.off()
+```
+
+Test
+```{r}
+# to.plot2 <- to.plot %>% merge(sample_metadata[,c("id_rna","lineage10x")])
+# p <- ggplot(to.plot2[stage_lineage=="E7.5_Endoderm"], aes(x=lineage10x, y=rate, fill=lineage10x)) +
+#   geom_boxplot(outlier.shape=NA, coef=1) +
+#   labs(x="", y="Methylation (%)") +
+#   facet_wrap(~sign, nrow=1, scales="fixed") +
+#   # coord_cartesian(ylim=c(5,60)) +
+#   scale_fill_manual(values=opts$celltype.colors) +
+#   theme_bw() +
+#   guides(x = guide_axis(angle = 90)) +
+#   theme(
+#     legend.position = "none",
+#     axis.text = element_text(color="black")
+#   )
+# print(p)
+```
+
+# Plot
+
+Define global stats per cell
+
+```{r}
+acc.stats <- acc_dt[,.(mean=mean(rate)),by="id_acc"] %>% .[,context:="GC"]
+met.stats <- met_dt[,.(mean=mean(rate)),by="id_met"] %>% .[,context:="CG"]
+```
+
+```{r}
+theme_pub <- function() {
+    theme(
+      axis.text.x = element_text(size=rel(0.50), color="black"),
+      axis.text.y = element_text(size=rel(0.75), color="black"),
+      axis.title = element_text(size=rel(0.75), color="black"),
+      legend.position = "none"
+    )
+}
+```
+
+```{r}
+for (i in unique(marker_peaks.dt$celltype)) {
+  
+  ## Prepare data
+  
+  to.plot.met <- met_dt %>% 
+    .[id%in%marker_peaks.dt[celltype==i,id]] %>%
+    .[,.(rate=100*(sum(Nmet)/sum(Ntotal))),by=c("id_met")] %>%
+    merge(sample_metadata[,c("id_met","id_rna","lineage10x","stage_lineage")], by="id_met") %>%
+    merge(met.stats,by="id_met") %>% .[,norm_rate:=rate/mean]  %>%
+    # .[,lineage10x:=factor(lineage10x, levels=opts$)]
+    .[,stage_lineage:=factor(stage_lineage, levels=opts$stage_lineage)]
+  
+  to.plot.acc <- acc_dt %>% 
+    .[id%in%marker_peaks.dt[celltype==i,id]] %>%
+    .[,.(rate=100*(sum(Nmet)/sum(Ntotal))),by=c("id_acc")] %>%
+    merge(sample_metadata[,c("id_acc","id_rna","lineage10x","stage_lineage")], by="id_acc") %>%
+    merge(acc.stats,by="id_acc") %>% .[,norm_rate:=rate/mean]  %>%
+    # .[,lineage10x:=factor(lineage10x, levels=opts$)]
+    .[,stage_lineage:=factor(stage_lineage, levels=opts$stage_lineage)]
+  
+  ## Plot
+  
+  p.met.unscaled <- ggboxplot(to.plot.met, x = "stage_lineage", y = "rate", fill="stage_lineage", coef=0.5, outlier.shape=NA) +
+    scale_fill_manual(values=opts$stagelineage.colors) +
+    labs(x="", y="Methylation (%)") +
+    guides(x = guide_axis(angle = 90)) +
+    coord_cartesian(ylim=c(0,100)) +
+    theme_pub()
+  p.met.scaled <- ggboxplot(to.plot.met, x = "stage_lineage", y = "norm_rate", fill="stage_lineage", coef=0.5, outlier.shape=NA) +
+    geom_hline(yintercept=1, linetype="dashed", alpha=0.75, size=0.75) +
+    scale_fill_manual(values=opts$stagelineage.colors) +
+    labs(x="", y="Methylation (% relative to bgd)") +
+    guides(x = guide_axis(angle = 90)) +
+    coord_cartesian(ylim=c(0.1,1.75)) +
+    theme_pub()
+  
+  p.acc.unscaled <- ggboxplot(to.plot.acc, x = "stage_lineage", y = "rate", fill="stage_lineage", coef=0.5, outlier.shape=NA) +
+    scale_fill_manual(values=opts$stagelineage.colors) +
+    labs(x="", y="Accessibility (%)") +
+    coord_cartesian(ylim=c(20,70)) +
+    guides(x = guide_axis(angle = 90)) +
+    theme_pub()
+  
+  p.acc.scaled <- ggboxplot(to.plot.acc, x = "stage_lineage", y = "norm_rate", fill="stage_lineage", coef=0.5, outlier.shape=NA) +
+    geom_hline(yintercept=1, linetype="dashed", alpha=0.75, size=0.75) +
+    scale_fill_manual(values=opts$stagelineage.colors) +
+    labs(x="", y="Accessibility (% relative to bgd)") +
+    coord_cartesian(ylim=c(0.6,1.8)) +
+    guides(x = guide_axis(angle = 90)) +
+    theme_pub()
+  
+  p <- cowplot::plot_grid(plotlist=list(p.met.unscaled, p.met.scaled, p.acc.unscaled, p.acc.scaled), nrow = 2, ncol=2)
+  pdf(sprintf("%s/%s_markerPeaks_scnmt_metacc.pdf",io$outdir,i), width=11, height=8)
+  print(p)
+  dev.off()
+}
+```

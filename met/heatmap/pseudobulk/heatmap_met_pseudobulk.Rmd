@@ -1,0 +1,85 @@
+---
+title: "Heatmaps of DNA methylation levels"
+---
+
+```{r load_modules, echo=FALSE, include=FALSE}
+library(pheatmap)
+library(RColorBrewer)
+```
+
+Load default settings
+```{r}
+if (grepl("ricard",Sys.info()['nodename'])) {
+  source("/Users/ricard/scnmt_gastrulation_TetChimera//settings.R")
+} else if (grepl("ebi",Sys.info()['nodename'])) {
+  source("/homes/ricard/scnmt_gastrulation_TetChimera//settings.R")
+} else {
+  stop("Computer not recognised")
+}
+```
+
+Define I/O
+```{r}
+io$outdir <- paste0(io$basedir,"/met/results/heatmaps")
+```
+
+Define options
+```{r}
+opts$lineages <- c(
+  "Zygote", 
+  "2cell", 
+  "4cell", 
+  "8cell", 
+  "Morula", 
+  "ICM", 
+  "TE",
+  "hESC"
+)
+
+opts$met.annos <- NULL
+```
+
+```{r}
+if (is.null(opts$met.annos)) {
+  opts$met.annos <- list.files(io$features.dir, pattern=".bed.gz") %>% gsub(".bed.gz","",.)
+}
+```
+
+
+Load methylation data
+```{r load_data, echo=FALSE, include=FALSE}
+met_dt <- lapply(opts$met.annos, function(n) {
+  fread(
+    file = sprintf("%s/%s.tsv.gz",io$met_data_parsed.pseudobulk,n),
+    showProgress = F, header = F,
+    select = c("V1"="factor","V2"="character","V3"="factor","V4"="integer","V5"="integer","V6"="integer")
+    ) %>% .[V1%in%opts$lineages]
+}) %>% rbindlist %>% setnames(c("lineage","id","anno","Nmet","Ntotal","rate"))
+```
+
+```{r}
+met_dt.summarised <- met_dt[,.(rate=mean(rate)),by=c("lineage","anno")]
+```
+
+Save
+```{r}
+fwrite(met_dt.summarised, paste0(io$outdir,"/heatmap_met_pseudobulk.tsv.gz"), sep="\t")
+```
+
+# Plot
+
+```{r}
+to.plot <- met_dt.summarised %>%
+  .[,lineage:=factor(lineage,levels=opts$lineages)] %>%
+  dcast(lineage~anno, value.var="rate") %>%
+  matrix.please
+```
+
+```{r}
+pdf(paste0(io$outdir,"/heatmap_met_pseudobulk.pdf"), useDingbats = F, onefile = F, width=16, height=7)
+pheatmap(to.plot, 
+  color = colorRampPalette(brewer.pal(n=7, name ="Reds"))(50),
+  cluster_rows = FALSE,
+)
+dev.off()
+```
