@@ -25,27 +25,26 @@ source(here::here("settings.R"))
 
 ## START TEST ##
 # args <- list()
-# args$outfile <- file.path(io$basedir,"processed/rna_new/SingleCellExperiment.rds")
-# args$metadata <- file.path(io$basedir,"results/rna_new/qc/sample_metadata_after_qc.txt.gz")
+# args$metadata <- file.path(io$basedir,"results/rna/qc/sample_metadata_after_qc.txt.gz")
 # args$seurat <- file.path(io$basedir,"processed/rna_new/seurat.rds")
 # args$normalise <- FALSE
+# args$outfile <- file.path(io$basedir,"processed/rna_new/SingleCellExperiment.rds")
 # args$test <- FALSE
 ## END TEST ##
-
-# Sanity checks
-stopifnot(args$samples%in%opts$samples)
-if (args$test) args$samples <- head(args$samples,n=2)
 
 ###############
 ## Load data ##
 ###############
 
 # Load sample metadata
-sample_metadata <- fread(args$metadata) %>% .[pass_rnaQC==TRUE]
+sample_metadata <- fread(args$metadata) %>% 
+	.[pass_rnaQC==TRUE] %>% .[,cell:=NULL] %>% setnames("id_rna","cell")
+
 table(sample_metadata$sample)
 
 # Load seurat
 seurat <- readRDS(args$seurat)[,sample_metadata$cell]
+# stopifnot(sample_metadata$cell%in%colnames(seurat))
 
 #####################################
 ## Convert to SingleCellExperiment ##

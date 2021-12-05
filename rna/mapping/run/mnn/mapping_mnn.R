@@ -43,18 +43,17 @@ source(here::here("rna/mapping/run/mnn/mapping_functions.R"))
 
 ## START TEST ##
 # args$atlas_stages <- c("E6.5","E6.75","E7.0","E7.25","E7.5","E7.75","E8.0","E8.25","E8.5")
-# args$query_samples <- opts$samples
-# args$query_sce <- io$rna.sce
-# args$query_sce <- paste0(io$basedir,"/processed/rna/SingleCellExperiment.rds")
-# args$atlas_sce <- io$rna.atlas.sce
+# args$query_samples <- opts$samples[1]
+# args$query_sce <- paste0(io$basedir,"/processed/rna_new/SingleCellExperiment.rds")
+# args$atlas_sce <- io$atlas.sce
 # args$query_metadata <- paste0(io$basedir,"/results/rna/qc/sample_metadata_after_qc.txt.gz")
-# args$atlas_metadata <- io$rna.atlas.metadata
-# args$test <- FALSE
+# args$atlas_metadata <- io$atlas.metadata
+# args$test <- TRUE
 # args$npcs <- 50
 # args$n_neighbours <- 25
 # args$use_marker_genes <- FALSE
 # args$cosine_normalisation <- FALSE
-# args$outdir <- paste0(io$basedir,"/results/rna/mapping/test")
+# args$outfile <- paste0(io$basedir,"/results/rna/mapping/test.txt.gz")
 ## END TEST ##
 
 if (isTRUE(args$test)) print("Test mode activated...")
@@ -65,7 +64,8 @@ if (isTRUE(args$test)) print("Test mode activated...")
 
 # Load cell metadata
 meta_query <- fread(args$query_metadata) %>% 
-  .[pass_rnaQC==TRUE & sample%in%args$query_samples]
+  .[pass_rnaQC==TRUE & plate%in%args$query_samples] %>% 
+  .[,cell:=NULL] %>% setnames("id_rna","cell")
 if (isTRUE(args$test)) meta_query <- head(meta_query,n=1000)
 
 # Load SingleCellExperiment
@@ -163,7 +163,6 @@ stopifnot(genes_to_use%in%rownames(sce_query))
 ## Map ##
 #########
 
-# TO-DO: TRY COSINE NORMALISATION
 mapping  <- mapWrap(
   sce_atlas = sce_atlas,
   meta_atlas = meta_atlas,

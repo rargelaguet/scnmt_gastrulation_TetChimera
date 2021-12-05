@@ -1,25 +1,34 @@
 suppressPackageStartupMessages(library(Seurat))
-suppressPackageStartupMessages(library(argparse))
 
 here::i_am("rna/processing/1_create_seurat_rna.R")
 source(here::here("settings.R"))
 source(here::here("utils.R"))
-
-args <- list()
-
-## END TEST ##
 
 ###############
 ## Load data ##
 ###############
 
 sce <- readRDS(file.path(io$basedir,"processed/rna/SingleCellExperiment.rds"))
+# sce$id_rna <- colnames(sce)
+
+metadata <- fread(file.path(io$basedir,"processed/sample_metadata_sce.txt"))
 
 # metadata <- colData(sce) %>% as.data.table(keep.rownames = T) %>% setnames("rn","id_rna")
 
 gene_metadata.dt <- fread(io$gene_metadata) %>% 
   .[!is.na(symbol) & symbol!=""] %>% 
   .[!duplicated(symbol)]
+
+#########################
+## Add metadata to SCE ##
+#########################
+
+stopifnot(colnames(sce)%in%metadata$id_rna)
+
+tmp <- metadata %>% as.data.frame
+rownames(tmp) <- metadata$id_rna
+
+colData(sce) <- tmp %>% .[colnames(sce),] %>% DataFrame()
 
 ##################
 ## Rename genes ##
@@ -64,6 +73,6 @@ seurat[["rib_percent_RNA"]] <- PercentageFeatureSet(seurat, features = ribo.gene
 metadata <- seurat@meta.data %>% as.data.table %>% .[,orig.ident:=NULL] %>%
   .[,c("nCount_originalexp","nFeature_originalexp","sierra_rna","sierra_dna","i7","i5"):=NULL]
 
-args$outdir <- file.path(io$basedir,"processed/rna_new")
-fwrite(metadata, file.path(args$outdir,"metadata.txt.gz"), quote=F, na="NA", sep="\t")
-saveRDS(seurat, file.path(args$outdir,"seurat.rds"))
+io$outdir <- file.path(io$basedir,"processed/rna_new")
+fwrite(metadata, file.path(io$outdir,"metadata.txt.gz"), quote=F, na="NA", sep="\t")
+saveRDS(seurat, file.path(io$outdir,"seurat.rds"))

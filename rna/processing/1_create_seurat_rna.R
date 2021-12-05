@@ -6,6 +6,7 @@ suppressPackageStartupMessages(library(argparse))
 ######################
 
 p <- ArgumentParser(description='')
+p$add_argument('--metadata',        type="character",                    help='Counts file')
 p$add_argument('--counts',        type="character",                    help='Counts file')
 p$add_argument('--outdir',       type="character",                    help='Output directory')
 args <- p$parse_args(commandArgs(TRUE))
@@ -19,10 +20,10 @@ source(here::here("settings.R"))
 source(here::here("utils.R"))
 
 ## START TEST ##
-args <- list()
-args$counts <- file.path(io$basedir,"processed/rna/counts_GRCm38_100.tsv.gz")
-args$metadata <- file.path(io$basedir,"processed/sample_metadata_sce.txt")
-args$outdir <- file.path(io$basedir,"processed/rna")
+# args <- list()
+# args$counts <- file.path(io$basedir,"processed/rna/counts_GRCm38_100.tsv.gz")
+# args$metadata <- file.path(io$basedir,"processed/rna/sample_metadata_sce.txt.gz")
+# args$outdir <- file.path(io$basedir,"processed/rna")
 ## END TEST ##
 
 #######################

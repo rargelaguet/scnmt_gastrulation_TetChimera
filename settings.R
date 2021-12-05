@@ -27,7 +27,7 @@ if (grepl("ricard",Sys.info()['nodename'])) {
   if (grepl("Clark", Sys.info()['effective_user'])) {
     io$basedir       <- "/bi/scratch/Stephen_Clark/multiome/resilio"
   } else if (grepl("argelag", Sys.info()['effective_user'])) {
-    io$basedir <- "/bi/scratch/Stephen_Clark/tet_chimera_nmtseq/"
+    io$basedir <- "/bi/group/reik/ricard/data/tet_chimera_nmtseq"
     io$atlas.basedir <- "/bi/group/reik/ricard/data/pijuansala2019_gastrulation10x"
   }
 } else {
@@ -174,7 +174,6 @@ opts$plates <- c(
 	"E8.5_oct20_plate6",
 	"E8.5_oct20_plate2",
 	"E8.5_oct20_plate8"
-
 )
 
 opts$samples <- c(

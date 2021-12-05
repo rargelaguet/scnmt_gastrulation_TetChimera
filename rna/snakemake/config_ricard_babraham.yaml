@@ -1,28 +1,25 @@
 samples:
-    - E7.5_rep1
-    - E7.5_rep2
-    - E8.0_rep1
-    - E8.0_rep2
-    - E8.5_rep1
-    - E8.5_rep2
-    - E8.75_rep1
-    - E8.75_rep2
-
-# stages:
-#     - E7.5
-#     - E8.0
-#     - E8.5
-#     - E8.75
+    - E7.5_TET_TKO_KDR+
+    - E7.5_TET_TKO_crispr_rep1
+    - E7.5_TET_TKO_crispr_rep2
+    - E8.5_WT_rep1
+    - E8.5_WT_rep2
+    - E8.5_WT_CD41+_rep1
+    - E8.5_WT_CD41+_rep2
+    - E8.5_TET_TKO_KDR+_CD41+_rep1
+    - E8.5_TET_TKO_KDR+_CD41+_rep2
+    - E8.5_TET_TKO_KDR+_rep1
+    - E8.5_TET_TKO_KDR+_rep2
 
 #################
 ## Directories ##
 #################
 
 directories:
-    base: /bi/group/reik/ricard/data/gastrulation_multiome_10x
-    original_data: /bi/group/reik/ricard/data/gastrulation_multiome_10x/original
-    processed_data: /bi/group/reik/ricard/data/gastrulation_multiome_10x/processed_new/rna
-    results: /bi/group/reik/ricard/data/gastrulation_multiome_10x/results_new
+    base: /bi/group/reik/ricard/data/tet_chimera_nmtseq
+    original_data: /bi/group/reik/ricard/data/tet_chimera_nmtseq/original
+    processed_data: /bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/rna_new
+    results: /bi/group/reik/ricard/data/tet_chimera_nmtseq/results
     atlas: /bi/group/reik/ricard/data/pijuansala2019_gastrulation10x
 
 ###############
@@ -31,11 +28,10 @@ directories:
 
 resources:
     marker_genes: /bi/group/reik/ricard/data/pijuansala2019_gastrulation10x/results/marker_genes/all_stages/marker_genes.txt.gz
-    umap: "/bi/group/reik/ricard/data/gastrulation_multiome_10x/results_new/rna/dimensionality_reduction/umap_features1000_pcs30_neigh25_dist0.3.txt.gz"
+    umap: "/bi/group/reik/ricard/data/tet_chimera_nmtseq/results_new/rna/dimensionality_reduction/umap_features1000_pcs30_neigh25_dist0.3.txt.gz"
     celltypes: ["Epiblast", "Primitive_Streak", "Caudal_epiblast", "PGC", "Anterior_Primitive_Streak", "Notochord", "Def._endoderm", "Gut", "Nascent_mesoderm", "Mixed_mesoderm", "Intermediate_mesoderm", "Caudal_Mesoderm", "Paraxial_mesoderm", "Somitic_mesoderm", "Pharyngeal_mesoderm", "Cardiomyocytes", "Allantois", "ExE_mesoderm", "Mesenchyme", "Haematoendothelial_progenitors", "Endothelium", "Blood_progenitors_1", "Blood_progenitors_2", "Erythroid1", "Erythroid2", "Erythroid3", "NMP", "Rostral_neurectoderm", "Caudal_neurectoderm", "Neural_crest", "Forebrain_Midbrain_Hindbrain", "Spinal_cord", "Surface_ectoderm", "Visceral_endoderm", "ExE_endoderm", "ExE_ectoderm", "Parietal_endoderm"]
-    stages: ["E7.5","E8.0","E8.5","E8.75"]
-    TFs_file: "/bi/group/reik/ricard/data/mm10_regulation/TFs/TFs.txt"
-    cell_metadata: "/bi/group/reik/ricard/data/gastrulation_multiome_10x/results_new/atac/archR/celltype_assignment/sample_metadata_after_celltype_assignment.txt.gz"
+    stages: ["E7.5","E8.5"]
+    # TFs_file: "/bi/group/reik/ricard/data/mm10_regulation/TFs/TFs.txt"
 
 #############
 ## Scripts ##
@@ -45,22 +41,16 @@ scripts:
     create_seurat: ../processing/1_create_seurat_rna.R
     qc: ../processing/2_QC.R
     seurat_to_sce: ../processing/3_seurat_to_SCE.R
-    doublet_detection: ../processing/4_doublet_detection.R
-    parse_doublets: ../processing/5_parse_sample_metadata_after_doublets.R
     mapping_mnn: ../mapping/run/mnn/mapping_mnn.R
     mapping_seurat: ../mapping/run/seurat/mapping_seurat.R
     parse_mapping: ../mapping/run/parse_sample_metadata_after_mapping.R
     dimensionality_reduction_sce: ../dimensionality_reduction/dimensionality_reduction_sce.R
     dimensionality_reduction_seurat: ../dimensionality_reduction/dimensionality_reduction_seurat.R
     pseudobulk_rna: ../pseudobulk/pseudobulk_rna.R
-    celltype_validation_single_cells: ../celltype_validation/celltype_validation_single_cells.R
-    celltype_validation_pseudobulk: ../celltype_validation/celltype_validation_pseudobulk.R
+    # celltype_validation_single_cells: ../celltype_validation/celltype_validation_single_cells.R
+    # celltype_validation_pseudobulk: ../celltype_validation/celltype_validation_pseudobulk.R
     plot_mapping_results: ../mapping/analysis/plot_mapping_umap.R
     plot_celltype_proportions: ../celltype_proportions/plot_celltype_proportions.R
-    infer_trajectories: ../trajectories/infer_trajectory.R
-    coexpression_TF_vs_gene_single_cells: ../TF2gene_coexpression/coexpression_TF_vs_gene_single_cells.R
-    coexpression_TF_vs_gene_pseudobulk: ../TF2gene_coexpression/coexpression_TF_vs_gene_pseudobulk.R
-
 
 
 ################
@@ -68,13 +58,9 @@ scripts:
 ################
 
 pseudobulk_rna:
-    # group_by: ["sample", "celltype.mapped_mnn", "celltype.mapped_seurat"]
     group_by: ["celltype.mapped_mnn", "celltype.mapped_seurat"]
     normalisation_method: "cpm"
     
-doublet_detection:
-    doublet_score_threshold: 1.25
-
 mapping_mnn:
     atlas_stages: ["E6.5","E6.75","E7.0","E7.25","E7.5","E7.75","E8.0","E8.25","E8.5"]
     npcs: 50
@@ -86,45 +72,41 @@ mapping_seurat:
     n_neighbours: 25
 
 qc:
-    min_nFeature_RNA: 2000
+    min_nFeature_RNA: 4000
     max_nFeature_RNA: 10000
-    percent_mt: 40
+    percent_mt: 10
     percent_rib: 20
-
+    
 dimensionality_reduction_sce:
-    npcs: 50
-    features: 2500
+    npcs: 30
+    features: 1000
     n_neighbors: 25
-    min_dist: 0.5
-    vars_to_regress: ["nFeature_RNA"]
-    colour_by: ["sample", "stage", "celltype.mapped_mnn", "celltype.mapped_seurat", "doublet_score", "doublet_call", "nFeature_RNA"]
+    min_dist: 0.3
+    vars_to_regress: ["nFeature_RNA","mit_percent_RNA"]
+    colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
 
 dimensionality_reduction_seurat:
-    npcs: 50
-    features: 2500
+    npcs: 30
+    features: 1000
     n_neighbors: 25
-    min_dist: 0.5
+    min_dist: 0.3
     seed: 42
-    vars_to_regress: ["nFeature_RNA"]
-    # vars_to_regress: ["nFeature_RNA","mitochondrial_percent_RNA"]
-    colour_by: ["sample", "stage", "celltype.mapped_mnn", "celltype.mapped_seurat", "doublet_score", "doublet_call", "nFeature_RNA"]
+    vars_to_regress: ["nFeature_RNA","mit_percent_RNA"]
+    colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
 
-celltype_validation_single_cells:
-    celltype_label: "celltype.mapped_mnn"
+# celltype_validation_single_cells:
+#     umap: "..."
+#     celltype_label: "celltype.mapped_seurat"
 
-celltype_validation_pseudobulk:
-    celltype_label: "celltype.mapped_mnn"
+# celltype_validation_pseudobulk:
+#     umap: "..."
+#     celltype_label: "celltype.mapped_seurat"
 
 plot_celltype_proportions:
     celltype_label: "celltype.mapped_mnn"
     # celltype_label: ["celltype.mapped_seurat","celltype.mapped_mnn"]
 
-infer_trajectories:
-    # trajectory_name: ["blood", "ectoderm", "endoderm", "mesoderm"]
-    trajectory_name: ["blood"]
-    celltype_label: "celltype.mapped_mnn"
-
-# coexpression_TF_vs_gene_trajectories
+# plot_mapping_results
 
 ###########
 ## Slurm ##
