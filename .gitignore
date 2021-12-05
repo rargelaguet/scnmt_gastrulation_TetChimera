@@ -14,7 +14,7 @@
 *.tiff
 *.ai
 *.svg
-# *.png
+*.png
 
 # Data files
 *.hdf5
@@ -29,4 +29,13 @@
 # Ignore local folders
 **/local-data
 *.Rproj.user
+
+# Jupyter notebooks
+*.ipynb_checkpoints
+# *.ipynb
 .Rproj.user
+
+*.snakemake*
+
+
+*slurm*out
