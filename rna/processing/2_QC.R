@@ -22,7 +22,7 @@ source(here::here("settings.R"))
 
 ## START TEST ##
 # args <- list()
-# args$metadata <- file.path(io$basedir,"processed/rna_new/metadata.txt.gz")
+# args$metadata <- file.path(io$basedir,"processed/rna_new/metadata_sce.txt.gz")
 # # args$metadata <- io$metadata
 # args$min_nFeature_RNA <- 4000
 # args$max_nFeature_RNA <- 10000
@@ -51,7 +51,7 @@ table(metadata$pass_rnaQC)
 #####################
 
 to.plot <- metadata %>% .[pass_rnaQC==TRUE] %>%
-    .[nFeature_RNA<=10000 & mit_percent_RNA<=5 & rib_percent_RNA<=17] %>% # remove massive outliers for plotting
+    # .[nFeature_RNA<=10000 & mit_percent_RNA<=5 & rib_percent_RNA<=17] %>% # remove massive outliers for plotting
     # .[,log_nFeature_RNA:=log10(nFeature_RNA)] %>%
     melt(id.vars=c("plate","cell","stage"), measure.vars=c("nFeature_RNA","mit_percent_RNA","rib_percent_RNA"))
     # melt(id.vars=c("sample","cell"), measure.vars=c("nFeature_RNA"))
@@ -128,5 +128,5 @@ dev.off()
 ## Save ##
 ##########
 
-fwrite(metadata, args$outdir(args$outdir,"sample_metadata_after_qc.txt.gz"), quote=F, na="NA", sep="\t")
+fwrite(metadata, file.path(args$outdir,"sample_metadata_after_qc.txt.gz"), quote=F, na="NA", sep="\t")
 

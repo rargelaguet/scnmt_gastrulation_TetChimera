@@ -1,0 +1,53 @@
+
+import os
+from re import search
+import getpass
+
+
+############
+## Config ##
+############
+
+host = os.uname()[1]
+if search("BI2404M", host) and getpass.getuser()=="argelagr":
+    configfile: "config_ricard_local.yaml"
+elif search("[headstone|pebble]", host) and getpass.getuser()=="argelagr":
+    configfile: "config_ricard_babraham.yaml"
+elif search("[headstone|pebble]", host) and getpass.getuser()=="stephen":
+    configfile: "config_stephen_babraham.yaml"
+else:
+    print("Computer not recognised")
+    exit()
+
+# validate(config, schema="schemas/config.schema.yaml")
+
+###########
+## Rules ##
+###########
+
+rule all:
+    input: 
+        config["directories"]["results"]+"/met/stats/sample_met_stats.txt.gz"
+        # expand("%s/rna/mapping/mapping_seurat_{sample}.txt.gz" % config["directories"]["results"], sample=config["samples"])
+        # config["directories"]["results"]+"/rna/mapping/pdf/umap_mapped_allcells.pdf",
+        
+################################
+## Global statistics per cell ##
+################################
+
+rule global_stats_per_cell_met:
+    input:
+        script=config["scripts"]["global_stats_per_cell_met"],
+        indir=config["directories"]["processed_data"]+"/met/cpg_level"
+    output:
+        config["directories"]["results"]+"/met/stats/sample_met_stats.txt.gz"
+    log: 
+        "logs/global_stats_per_cell_CG.log"
+    threads: 
+        config["slurm"]["global_stats_per_cell_met"]["threads"]
+    resources:
+        mem_mb = config["slurm"]["global_stats_per_cell_met"]["memory"]
+    shell:
+        "Rscript {input.script} --indir {input.indir} --context CG --outfile {output} > {log}"
+
+

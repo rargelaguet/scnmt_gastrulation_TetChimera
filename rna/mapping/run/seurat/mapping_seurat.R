@@ -59,7 +59,9 @@ if (isTRUE(args$test)) print("Test mode activated...")
 ################
 
 # Load cell metadata
-meta_query <- fread(args$query_metadata) %>% .[pass_rnaQC==T & sample%in%args$query_samples]
+meta_query <- fread(args$query_metadata) %>% 
+  .[pass_rnaQC==T & plate%in%args$query_samples] %>%
+  .[,cell:=NULL] %>% setnames("id_rna","cell")
 if (isTRUE(args$test)) meta_query <- head(meta_query,n=1000)
 
 # Load SingleCellExperiment

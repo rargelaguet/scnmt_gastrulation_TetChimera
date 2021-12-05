@@ -14,18 +14,19 @@ p$add_argument('--outdir',          type="character",                           
 
 args <- p$parse_args(commandArgs(TRUE))
 
-## START TEST ##
-# args$query_metadata <- "/Users/argelagr/data/gastrulation_histones/results/rna/mapping/sample_metadata_after_mapping.txt.gz"
-# args$atlas_metadata <- "/Users/argelagr/data//gastrulation10x/sample_metadata.txt.gz"
-# args$outdir <- "/Users/argelagr/data/gastrulation_histones/results/rna/mapping/pdf"
-## END TEST ##
-
 #####################
 ## Define settings ##
 #####################
 
 # load default setings
 source(here::here("settings.R"))
+
+## START TEST ##
+args$query_metadata <- file.path(io$basedir,"results/rna/mapping/sample_metadata_after_mapping.txt.gz")
+args$atlas_metadata <- file.path(io$atlas.basedir,"sample_metadata.txt.gz")
+args$samples <- opts$samples
+args$outdir <- file.path(io$basedir,"results/rna/mapping/pdf")
+## END TEST ##
 
 # Options
 
@@ -104,14 +105,14 @@ plot.dimred <- function(plot_df, query.label, atlas.label = "Atlas") {
 ####################
 
 to.plot <- umap.dt %>% copy %>%
-  .[,index:=match(cell, sample_metadata[,closest.cell] )] %>% 
-  .[,mapped:=as.factor(!is.na(index))] %>% 
-  .[,mapped:=plyr::mapvalues(mapped, from = c("FALSE","TRUE"), to = c("scRNA-seq atlas","RNA+CutTag"))] %>%
-  setorder(mapped) 
+  .[,index:=match(cell, sample_metadata[,closest.cell] )] %>%
+  .[,mapped:=as.factor(!is.na(index))] %>%
+  .[,mapped:=plyr::mapvalues(mapped, from = c("FALSE","TRUE"), to = c("scRNA-seq atlas","scNMT-seq"))] %>%
+  setorder(mapped)
 
-p <- plot.dimred(to.plot, query.label = "RNA+CutTag", atlas.label = "scRNA-seq atlas")
+p <- plot.dimred(to.plot, query.label = "scNMT-seq", atlas.label = "scRNA-seq atlas")
 
-pdf(sprintf("%s/umap_mapped_allcells.pdf",args$outdir), width=8, height=6.5)
+pdf(file.path(args$outdir,"umap_mapped_allcells.pdf"), width=8, height=6.5)
 print(p)
 dev.off()
 
@@ -129,7 +130,7 @@ for (i in args$samples) {
   
   p <- plot.dimred(to.plot, query.label = i, atlas.label = "Atlas")
   
-  pdf(sprintf("%s/umap_mapped_%s.pdf",args$outdir,i), width=8, height=6.5)
+  pdf(file.path(args$outdir,sprintf("umap_mapped_%s.pdf",i)), width=8, height=6.5)
   print(p)
   dev.off()
 }

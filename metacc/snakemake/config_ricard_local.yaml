@@ -1,0 +1,57 @@
+samples:
+    - E7.5_TET_TKO_KDR+
+    - E7.5_TET_TKO_crispr_rep1
+    - E7.5_TET_TKO_crispr_rep2
+    - E8.5_WT_rep1
+    - E8.5_WT_rep2
+    - E8.5_WT_CD41+_rep1
+    - E8.5_WT_CD41+_rep2
+    - E8.5_TET_TKO_KDR+_CD41+_rep1
+    - E8.5_TET_TKO_KDR+_CD41+_rep2
+    - E8.5_TET_TKO_KDR+_rep1
+    - E8.5_TET_TKO_KDR+_rep2
+
+#################
+## Directories ##
+#################
+
+directories:
+    base: /Users/argelagr/data/tet_chimera_nmtseq
+    processed_data: /Users/argelagr/data/tet_chimera_nmtseq/processed
+    results: /Users/argelagr/data/tet_chimera_nmtseq/results
+
+###############
+## Resources ##
+###############
+
+resources:
+    celltypes: ["Epiblast", "Primitive_Streak", "Caudal_epiblast", "PGC", "Anterior_Primitive_Streak", "Notochord", "Def._endoderm", "Gut", "Nascent_mesoderm", "Mixed_mesoderm", "Intermediate_mesoderm", "Caudal_Mesoderm", "Paraxial_mesoderm", "Somitic_mesoderm", "Pharyngeal_mesoderm", "Cardiomyocytes", "Allantois", "ExE_mesoderm", "Mesenchyme", "Haematoendothelial_progenitors", "Endothelium", "Blood_progenitors_1", "Blood_progenitors_2", "Erythroid1", "Erythroid2", "Erythroid3", "NMP", "Rostral_neurectoderm", "Caudal_neurectoderm", "Neural_crest", "Forebrain_Midbrain_Hindbrain", "Spinal_cord", "Surface_ectoderm", "Visceral_endoderm", "ExE_endoderm", "ExE_ectoderm", "Parietal_endoderm"]
+    stages: ["E7.5","E8.5"]
+
+#############
+## Scripts ##
+#############
+
+scripts:
+    global_stats_per_cell_met: ../stats/calculate_stats.R
+    qc_met: ../processing/qc.R
+
+################
+## Parameters ##
+################
+
+# global_stats_per_cell_met:
+#     group_by: ["celltype.mapped_mnn", "celltype.mapped_seurat"]
+#     normalisation_method: "cpm"
+    
+###########
+## Slurm ##
+###########
+
+slurm:  # memory in MB
+    qc_met: 
+        memory: 5000
+        threads: 1
+    global_stats_per_cell_met: 
+        memory: 2000
+        threads: 1
