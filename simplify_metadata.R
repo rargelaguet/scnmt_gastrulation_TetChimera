@@ -59,4 +59,14 @@ metadata[!is.na(gc_files),id_acc:=gc_files %>% gsub(".tsv.gz","",.)]
 # remove unused columns
 metadata[,c("cg_files","gc_files","sizeFactor","sierra_dna","sierra_rna","CD41.BV421","KDR.Cy7","tdTOM","i5","i7","well","column","class"):=NULL]
 
-fwrite(metadata,"/Users/argelagr/data/tet_chimera_nmtseq/processed/sample_metadata_sce.txt", quote=F, col.names = T, sep="\t", na="NA")
+fwrite(metadata,"/Users/argelagr/data/tet_chimera_nmtseq/processed/sample_metadata_sce.txt.gz", quote=F, col.names = T, sep="\t", na="NA")
+
+
+
+# foo <- fread("/Users/argelagr/data/tet_chimera_nmtseq/results/rna/mapping/sample_metadata_after_mapping.txt.gz")
+# bar <- fread("/Users/argelagr/data/tet_chimera_nmtseq/processed/sample_metadata_sce.txt.gz") %>% .[,c("plate","sample")] %>% unique
+# 
+# baz <- foo %>% .[,sample:=NULL] %>% merge(bar,by="plate")
+# table(baz$sample)
+# fwrite(baz,"/Users/argelagr/data/tet_chimera_nmtseq/results/rna/mapping/sample_metadata_after_mapping.txt.gz", quote = F, col.names = T, na="NA", sep="\t")
+

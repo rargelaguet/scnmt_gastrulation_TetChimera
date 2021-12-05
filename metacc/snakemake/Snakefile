@@ -27,27 +27,67 @@ else:
 
 rule all:
     input: 
-        config["directories"]["results"]+"/met/stats/sample_met_stats.txt.gz"
+        config["directories"]["results"]+"/met/stats/sample_metadata_after_met_stats.txt.gz"
         # expand("%s/rna/mapping/mapping_seurat_{sample}.txt.gz" % config["directories"]["results"], sample=config["samples"])
         # config["directories"]["results"]+"/rna/mapping/pdf/umap_mapped_allcells.pdf",
-        
-################################
-## Global statistics per cell ##
-################################
 
-rule global_stats_per_cell_met:
+##########################################
+## Calculate global statistics per cell ##
+##########################################
+
+rule calculate_global_stats_per_cell_met:
     input:
-        script=config["scripts"]["global_stats_per_cell_met"],
+        script=config["scripts"]["calculate_global_stats_per_cell_met"],
+        metadata = config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping.txt.gz",
         indir=config["directories"]["processed_data"]+"/met/cpg_level"
     output:
-        config["directories"]["results"]+"/met/stats/sample_met_stats.txt.gz"
+        config["directories"]["results"]+"/met/stats/sample_metadata_after_met_stats.txt.gz"
     log: 
-        "logs/global_stats_per_cell_CG.log"
+        "logs/global_stats_per_cell_met.log"
     threads: 
-        config["slurm"]["global_stats_per_cell_met"]["threads"]
+        config["slurm"]["calculate_global_stats_per_cell_met"]["threads"]
     resources:
-        mem_mb = config["slurm"]["global_stats_per_cell_met"]["memory"]
+        mem_mb = config["slurm"]["calculate_global_stats_per_cell_met"]["memory"]
     shell:
-        "Rscript {input.script} --indir {input.indir} --context CG --outfile {output} > {log}"
+        "Rscript {input.script} --metadata {input.metadata}  --indir {input.indir} --context CG --outfile {output} --test > {log}"
 
+rule calculate_global_stats_per_cell_acc:
+    input:
+        script=config["scripts"]["calculate_global_stats_per_cell_acc"],
+        metadata = config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping.txt.gz",
+        indir=config["directories"]["processed_data"]+"/acc/cpg_level"
+    output:
+        config["directories"]["results"]+"/acc/stats/sample_metadata_after_acc_stats.txt.gz"
+    log: 
+        "logs/global_stats_per_cell_acc.log"
+    threads: 
+        config["slurm"]["calculate_global_stats_per_cell_acc"]["threads"]
+    resources:
+        mem_mb = config["slurm"]["calculate_global_stats_per_cell_acc"]["memory"]
+    shell:
+        "Rscript {input.script} --metadata {input.metadata}  --indir {input.indir} --context GC --outfile {output} --test > {log}"
+
+
+#####################################
+## Plot global statistics per cell ##
+#####################################
+
+################################
+## QC per cell ##
+################################
+
+# rule qc_met:
+#     input:
+#         script=config["scripts"]["qc_met"],
+#         indir=config["directories"]["processed_data"]+"/met/cpg_level"
+#     output:
+#         config["directories"]["results"]+"/met/stats/sample_met_stats.txt.gz"
+#     log: 
+#         "logs/global_stats_per_cell_CG.log"
+#     threads: 
+#         config["slurm"]["qc_met"]["threads"]
+#     resources:
+#         mem_mb = config["slurm"]["qc_met"]["memory"]
+#     shell:
+#         "Rscript {input.script} --indir {input.indir} --context CG --outfile {output} > {log}"
 

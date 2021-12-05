@@ -177,15 +177,14 @@ opts$plates <- c(
 )
 
 opts$samples <- c(
-	"E7.5_TET_TKO_KDR+",
-	"E7.5_TET_TKO_crispr_rep1",
-	"E7.5_TET_TKO_crispr_rep2",
-	"E8.5_WT_rep1",
-	"E8.5_WT_rep2",
-	"E8.5_WT_CD41+_rep1",
-	"E8.5_WT_CD41+_rep2",
-	"E8.5_TET_TKO_KDR+_CD41+_rep1",
-	"E8.5_TET_TKO_KDR+_CD41+_rep2",
-	"E8.5_TET_TKO_KDR+_rep1",
-	"E8.5_TET_TKO_KDR+_rep2"
+  "E7.5_TET_TKO",
+  "E7.5_TET_TKO_crispr",
+  "E8.5_WT_CD41+",
+  "E8.5_TET_TKO_CD41+",
+  "E8.5_WT_KDR+",
+  "E8.5_TET_TKO_KDR+",
+  "E8.5_WT_KDR+_CD41+",
+  "E8.5_TET_TKO_KDR+_CD41+",
+  "E8.5_WT",
+  "E8.5_TET_TKO"
 )

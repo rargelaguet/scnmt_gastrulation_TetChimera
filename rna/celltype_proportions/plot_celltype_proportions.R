@@ -20,10 +20,10 @@ source(here::here("settings.R"))
 source(here::here("utils.R"))
 
 ## START TEST ##
-args$metadata <- file.path(io$basedir,"results/rna/mapping/sample_metadata_after_mapping.txt.gz")
-args$samples <- opts$samples
-args$celltype_label <- "celltype.mapped_mnn"
-args$outdir <- file.path(io$basedir,"results/rna/celltype_proportions")
+# args$metadata <- file.path(io$basedir,"results/rna/mapping/sample_metadata_after_mapping.txt.gz")
+# args$samples <- opts$samples
+# args$celltype_label <- "celltype.mapped_mnn"
+# args$outdir <- file.path(io$basedir,"results/rna/celltype_proportions")
 ## END TEST ##
 
 # I/O
@@ -51,7 +51,7 @@ table(sample_metadata$sample)
 to.plot <- sample_metadata %>%
   .[,N:=.N,by="sample"] %>%
   # .[,celltype:=stringr::str_replace_all(celltype,opts$aggregate.celltypes)] %>%
-  .[,.(N=.N, celltype_proportion=.N/unique(N)),by=c("sample","class","celltype")] %>%
+  .[,.(N=.N, celltype_proportion=.N/unique(N)),by=c("sample","celltype")] %>%
   setorder(sample)  %>% .[,sample:=factor(sample,levels=args$samples)]
 
 ######################

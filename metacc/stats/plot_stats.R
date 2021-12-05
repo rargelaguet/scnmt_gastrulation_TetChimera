@@ -22,14 +22,17 @@ source(here::here("settings.R"))
 
 ## START TEST ##
 args <- list()
-args$indir <- file.path(io$basedir,"processed/met/cpg_level")
-args$outfile <- file.path(io$basedir,"results/met/stats/sample_met_stats.txt")
+args$stats <- file.path(io$basedir,"results/met/stats/sample_met_stats.txt.gz")
+args$outdir <- file.path(io$basedir,"results/met/stats/pdf")
 args$context <- "CG"
 args$celltype_label <- "celltype.mapped_mnn"
 ## END TEST ##
 
 # Sanity checks
 stopifnot(args$context %in% c("CG","GC"))
+
+# I/O
+dir.create(args$outdir, showWarnings=F)
 
 ###################
 ## Load metadata ##

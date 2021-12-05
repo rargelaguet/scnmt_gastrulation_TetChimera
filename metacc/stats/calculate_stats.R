@@ -1,3 +1,5 @@
+suppressPackageStartupMessages(library(argparse))
+
 here::here("metacc/stats/calculate_stats.R")
 
 ######################
@@ -6,8 +8,10 @@ here::here("metacc/stats/calculate_stats.R")
 
 p <- ArgumentParser(description='')
 p$add_argument('--indir',  type="character",              help='Input directory')
+p$add_argument('--metadata',  type="character",              help='Cell metadata file')
 p$add_argument('--outfile',  type="character",              help='Output file')
 p$add_argument('--context',  type="character",              help='cg/CG or gc/GC')
+p$add_argument('--test', action="store_true",             help='Test mode? subset number of cells')
 
 # Read arguments
 args <- p$parse_args(commandArgs(TRUE))
@@ -20,10 +24,12 @@ source(here::here("settings.R"))
 source(here::here("utils.R"))
 
 ## START TEST ##
-args <- list()
-args$indir <- file.path(io$basedir,"processed/acc/gpc_level")
-args$outfile <- file.path(io$basedir,"results/acc/stats/sample_acc_stats.txt.gz")
-args$context <- "GC"
+# args <- list()
+# args$indir <- file.path(io$basedir,"processed/acc/gpc_level")
+# args$metadata <- file.path(io$basedir,"results/rna/mapping/sample_metadata_after_mapping.txt.gz")
+# args$outfile <- file.path(io$basedir,"results/acc/stats/sample_metadata_after_acc_stats.txt.gz")
+# args$context <- "GC"
+# args$test <- TRUE
 ## END TEST ##
 
 # Sanity checks
@@ -31,6 +37,21 @@ stopifnot(args$context %in% c("CG","GC"))
 
 # Define cells
 opts$cells <- list.files(args$indir, pattern = "*.tsv.gz") %>% gsub(".tsv.gz","",.)
+
+if (args$test) opts$cells <- head(opts$cells,n=5)
+
+###################
+## Load metadata ##
+###################
+
+sample_metadata <- fread(args$metadata)
+
+# if (args$context=="CG") {
+#   stopifnot(opts$cells%in%sample_metadata$id_met)
+# } else {
+#   stopifnot(opts$cells%in%sample_metadata$id_acc)
+# }
+# mean(opts$cells%in%sample_metadata$id_acc)
 
 ########################################
 ## Load data and calculate statistics ##
@@ -56,13 +77,15 @@ for (i in opts$cells) {
 
 # Define column names
 if (args$context=="CG") {
-  stats %>% setnames(c("cell","nCG","rate"))
+  to.save <- sample_metadata %>% 
+    merge(stats %>% setnames(c("id_met","nCG","met_rate")), by="id_met", all.x=TRUE)
 } else if (args$context=="GC") {
-  stats %>% setnames(c("cell","nGC","rate"))
+  to.save <- sample_metadata %>% 
+    merge(stats %>% setnames(c("id_acc","nGC","acc_rate")), by="id_acc", all.x=TRUE)
 }
 
 ##########
 ## Save ##
 ##########
 
-fwrite(stats, args$outfile, sep="\t", na = "NA", quote=F)
+fwrite(to.save, args$outfile, sep="\t", na = "NA", quote=F)

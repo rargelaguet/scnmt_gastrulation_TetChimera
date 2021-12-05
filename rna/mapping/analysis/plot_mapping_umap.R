@@ -22,10 +22,10 @@ args <- p$parse_args(commandArgs(TRUE))
 source(here::here("settings.R"))
 
 ## START TEST ##
-args$query_metadata <- file.path(io$basedir,"results/rna/mapping/sample_metadata_after_mapping.txt.gz")
-args$atlas_metadata <- file.path(io$atlas.basedir,"sample_metadata.txt.gz")
-args$samples <- opts$samples
-args$outdir <- file.path(io$basedir,"results/rna/mapping/pdf")
+# args$query_metadata <- file.path(io$basedir,"results/rna/mapping/sample_metadata_after_mapping.txt.gz")
+# args$atlas_metadata <- file.path(io$atlas.basedir,"sample_metadata.txt.gz")
+# args$samples <- opts$plates
+# args$outdir <- file.path(io$basedir,"results/rna/mapping/pdf")
 ## END TEST ##
 
 # Options
@@ -43,7 +43,8 @@ opts$alpha.nomapped <- 0.35
 ###################
 
 sample_metadata <- fread(args$query_metadata) %>%
-  .[pass_rnaQC==TRUE & sample%in%args$samples & !is.na(closest.cell)]
+  .[pass_rnaQC==TRUE & plate%in%args$samples & !is.na(closest.cell)] %>% 
+  .[,sample_plate:=sprintf("%s_%s",sample,plate)]
 
 stopifnot("closest.cell"%in%colnames(sample_metadata))
 
@@ -64,7 +65,6 @@ umap.dt <- meta_atlas %>%
 ##############################
 ## Define plotting function ##
 ##############################
-
 
 plot.dimred <- function(plot_df, query.label, atlas.label = "Atlas") {
   
@@ -120,10 +120,10 @@ dev.off()
 ## Plot one sample at a time ##
 ###############################
 
-for (i in args$samples) {
+for (i in unique(sample_metadata$sample_plate)) {
   
   to.plot <- umap.dt %>% copy %>%
-    .[,index:=match(cell, sample_metadata[sample==i,closest.cell] )] %>% 
+    .[,index:=match(cell, sample_metadata[sample_plate==i,closest.cell] )] %>% 
     .[,mapped:=as.factor(!is.na(index))] %>% 
     .[,mapped:=plyr::mapvalues(mapped, from = c("FALSE","TRUE"), to = c("Atlas",i))] %>%
     setorder(mapped) 

@@ -28,13 +28,14 @@ rule all:
     input: 
         config["directories"]["results"]+"/rna/qc/sample_metadata_after_qc.txt.gz",
         config["directories"]["processed_data"]+"/SingleCellExperiment.rds",
-        config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping.txt.gz",
-        expand("%s/rna/mapping/mapping_mnn_all_samples.txt.gz" % config["directories"]["results"]),
-        expand("%s/rna/mapping/mapping_seurat_all_samples.txt.gz" % config["directories"]["results"]),
+        # expand("%s/rna/mapping/mapping_mnn_all_samples.txt.gz" % config["directories"]["results"]),
+        # expand("%s/rna/mapping/mapping_seurat_all_samples.txt.gz" % config["directories"]["results"]),
         expand("%s/rna/mapping/mapping_mnn_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
         expand("%s/rna/mapping/mapping_seurat_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
-        expand("%s/rna/mapping/mapping_seurat_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"])
-        # expand("%s/rna/mapping/pdf/umap_mapped_allcells.pdf" % config["directories"]["results"]),
+        expand("%s/rna/mapping/mapping_seurat_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
+        config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping.txt.gz",
+        # config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping_all_samples.txt.gz",
+        expand("%s/rna/mapping/pdf/umap_mapped_allcells.pdf" % config["directories"]["results"])
         # expand("%s/rna/celltype_proportions/celltype_proportions_{sample}_horizontal_barplots.pdf" % config["directories"]["results"], stage=config["plates"]),
 
         # expand("%s/rna/pseudobulk/SingleCellExperiment_pseudobulk_{group_by}.rds" % config["directories"]["results"], 
@@ -267,7 +268,7 @@ rule parse_mapping_results_all_samples:
         mapping_mnn = rules.mapping_mnn_all_samples.output,
         script = config["scripts"]["parse_mapping"]
     output:
-        config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping.txt.gz"
+        config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping_all_samples.txt.gz"
     conda:
         "environment.yaml"
     log: 
@@ -461,24 +462,24 @@ rule plot_mapping_results:
 ## Plot cell type proportions ##
 ################################
 
-rule plot_celltype_proportions: 
-    input:
-        script = config["scripts"]["plot_celltype_proportions"],
-        metadata=rules.parse_mapping_results.output
-    output:
-        expand(config["directories"]["results"]+"/rna/celltype_proportions/celltype_proportions_{sample}_horizontal_barplots.pdf", stage=config["samples"])
-    params:
-        samples = expand("{sample}", sample=config["samples"]),
-        celltype_label = config["plot_celltype_proportions"]["celltype_label"],
-        outdir = config["directories"]["results"]+"/rna/celltype_proportions"
-    conda:
-        "environment.yaml"
-    log: 
-        "logs/plot_celltype_proportions.log"
-    threads: 
-        config["slurm"]["plot_celltype_proportions"]["threads"]
-    resources:
-        mem_mb = config["slurm"]["plot_celltype_proportions"]["memory"]        
-    shell:
-        "Rscript {input.script} --metadata {input.metadata} --celltype_label {params.celltype_label} \
-        --samples {params.samples} --outdir {params.outdir} > {log}"
+# rule plot_celltype_proportions: 
+#     input:
+#         script = config["scripts"]["plot_celltype_proportions"],
+#         metadata=rules.parse_mapping_results.output
+#     output:
+#         expand(config["directories"]["results"]+"/rna/celltype_proportions/celltype_proportions_{sample}_horizontal_barplots.pdf", stage=config["samples"])
+#     params:
+#         plates = expand("{plate}", plate=config["plates"]),
+#         celltype_label = config["plot_celltype_proportions"]["celltype_label"],
+#         outdir = config["directories"]["results"]+"/rna/celltype_proportions"
+#     conda:
+#         "environment.yaml"
+#     log: 
+#         "logs/plot_celltype_proportions.log"
+#     threads: 
+#         config["slurm"]["plot_celltype_proportions"]["threads"]
+#     resources:
+#         mem_mb = config["slurm"]["plot_celltype_proportions"]["memory"]        
+#     shell:
+#         "Rscript {input.script} --metadata {input.metadata} --celltype_label {params.celltype_label} \
+#         --samples {params.plates} --outdir {params.outdir} > {log}"
