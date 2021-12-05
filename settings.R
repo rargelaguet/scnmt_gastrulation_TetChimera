@@ -188,3 +188,5 @@ opts$samples <- c(
   "E8.5_WT",
   "E8.5_TET_TKO"
 )
+
+opts$chr <- paste0("chr",c(1:19,"X","Y"))

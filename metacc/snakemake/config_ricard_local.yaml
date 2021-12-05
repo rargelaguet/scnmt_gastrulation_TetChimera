@@ -47,8 +47,9 @@ resources:
 #############
 
 scripts:
-    calculate_global_stats_per_cell_met: ../stats/calculate_stats.R
-    qc_met: ../processing/qc.R
+    calculate_global_stats_per_cell: ../stats/calculate_stats.R
+    plot_global_stats_per_cell: ../stats/plot_stats.R
+    qc: ../processing/qc.R
 
 ################
 ## Parameters ##

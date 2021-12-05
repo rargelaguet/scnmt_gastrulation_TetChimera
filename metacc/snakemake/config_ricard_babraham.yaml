@@ -47,37 +47,37 @@ resources:
 #############
 
 scripts:
-    calculate_global_stats_per_cell_met: ../stats/calculate_stats.R
-    qc_met: ../processing/qc.R
+    calculate_global_stats_per_cell: ../stats/calculate_stats.R
+    calculate_chr_stats_per_cell: ../stats/calculate_stats_per_chr.R
+    plot_global_stats_per_cell: ../stats/plot_stats.R
+    plot_chr_stats_per_cell: ../stats/plot_stats_per_chr.R
+    qc: ../qc/qc.R
 
 ################
 ## Parameters ##
 ################
 
-# calculate_global_stats_per_cell_met:
-#     group_by: ["celltype.mapped_mnn", "celltype.mapped_seurat"]
-#     normalisation_method: "cpm"
-    
+params:
+    qc_met:
+        minimum_number_sites: 5000
+        min_rate: 50
+        max_rate: 100
+    qc_acc:
+        minimum_number_sites: 10000
+        min_rate: 10
+        max_rate: 40
+
 ###########
 ## Slurm ##
 ###########
 
 slurm:  # memory in MB
-    calculate_global_stats_per_cell_met: 
+    calculate_global_stats_per_cell: 
         memory: 5000
         threads: 1
-    calculate_global_stats_per_cell_acc: 
-        memory: 10000
-        threads: 1
-    plot_global_stats_per_cell_met: 
+    plot_global_stats_per_cell: 
         memory: 3000
         threads: 1
-    plot_global_stats_per_cell_acc: 
-        memory: 3000
-        threads: 1
-    qc_met: 
-        memory: 5000
-        threads: 1
-    qc_acc: 
+    qc: 
         memory: 5000
         threads: 1
