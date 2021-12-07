@@ -70,6 +70,7 @@ scripts:
     qc: ../qc/qc.R
     quantify_feature_level: ../quantify_feature_level/quantify_feature_level.R
     pseudobulk: ../pseudobulk/pseudobulk_cpg_level.R
+    boxplots_metacc_feature_level: ../boxplots_feature_level/boxplots_feature_level.R
 
 
 ################
@@ -104,12 +105,15 @@ slurm:  # memory in MB
     plot_global_stats_per_cell: 
         memory: 3000
         threads: 1
+    qc: 
+        memory: 5000
+        threads: 1
     quantify_feature_level: 
-        memory: 8000
+        memory: 15000
         threads: 1
     pseudobulk: 
         memory: 10000
         threads: 1
-    qc: 
+    boxplots_metacc_feature_level: 
         memory: 5000
         threads: 1

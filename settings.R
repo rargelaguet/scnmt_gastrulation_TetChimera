@@ -191,3 +191,5 @@ opts$samples <- c(
 )
 
 opts$chr <- paste0("chr",c(1:19,"X","Y"))
+
+opts$context.colors <- c("CG"="#F8766D", "GC"="#00BFC4")
