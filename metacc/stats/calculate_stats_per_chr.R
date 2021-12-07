@@ -42,7 +42,7 @@ if (args$test) opts$cells <- head(opts$cells,n=5)
 ## Load metadata ##
 ###################
 
-sample_metadata <- fread(args$metadata)
+# sample_metadata <- fread(args$metadata)
 
 # if (args$context=="CG") {
 #   stopifnot(opts$cells%in%sample_metadata$id_met)
@@ -84,15 +84,13 @@ for (i in opts$cells) {
 
 # Define column names
 if (args$context=="CG") {
-  to.save <- sample_metadata %>% 
-    merge(stats %>% setnames(c("id_met","chr","nCG","met_rate")), by="id_met", all.x=TRUE)
+  stats %>% setnames(c("id_met","chr","nCG","met_rate"))
 } else if (args$context=="GC") {
-  to.save <- sample_metadata %>% 
-    merge(stats %>% setnames(c("id_acc","chr","nGC","acc_rate")), by="id_acc", all.x=TRUE)
+  stats %>% setnames(c("id_acc","chr","nGC","acc_rate"))
 }
 
 ##########
 ## Save ##
 ##########
 
-fwrite(to.save, args$outfile, sep="\t", na = "NA", quote=F)
+fwrite(stats, args$outfile, sep="\t", na = "NA", quote=F)
