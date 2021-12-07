@@ -37,6 +37,7 @@ if (grepl("ricard",Sys.info()['nodename'])) {
 # Metadata
 io$metadata <- paste0(io$basedir,"/sample_metadata.txt.gz")
 io$gene_metadata <- paste0(io$basedir, "/features/gene_metadata/Mmusculus_genes_BioMart.87.txt")
+io$features.dir <- paste0(io$basedir, "/features/genomic_contexts")
 
 # RNA
 # io$rna.sce <- paste0(io$basedir,"/rna/SingleCellExperiment.rds")
@@ -47,18 +48,18 @@ io$rna.stats <- paste0(io$basedir,"/rna/results/stats/rna_stats.txt.gz")
 
 
 # Methylation
-io$met_data_raw <- paste0(io$basedir,"/met/cpg_level")
-io$met_data_raw.pseudobulk <- paste0(io$met_data_raw,"/pseudobulk")
-io$met_data_parsed <- paste0(io$basedir,"/met/feature_level")
-io$met_data_parsed.pseudobulk <- paste0(io$met_data_parsed,"/pseudobulk")
+io$met_data_raw <- paste0(io$basedir,"/processed/met/cpg_level")
+io$met_data_raw_pseudobulk <- paste0(io$met_data_raw,"/pseudobulk")
+io$met_data_parsed <- paste0(io$basedir,"/processed/met/feature_level")
+io$met_data_parsed_pseudobulk <- paste0(io$met_data_parsed,"/pseudobulk")
 io$met.stats <- paste0(io$basedir,"/met/results/stats/sample_stats.txt")
 io$met.diff <- paste0(io$basedir,"/met/results/differential/feature_level/lineages")
 
 # Accessibility
-io$acc_data_raw <- paste0(io$basedir,"/acc/gpc_level")
-io$acc_data_parsed <- paste0(io$basedir,"/acc/feature_level")
-io$acc_data_raw.pseudobulk <- paste0(io$acc_data_raw,"/pseudobulk")
-io$acc_data_parsed.pseudobulk <- paste0(io$acc_data_parsed,"/pseudobulk")
+io$acc_data_raw <- paste0(io$basedir,"/processed/acc/gpc_level")
+io$acc_data_parsed <- paste0(io$basedir,"/processed/acc/feature_level")
+io$acc_data_raw_pseudobulk <- paste0(io$acc_data_raw,"/pseudobulk")
+io$acc_data_parsed_pseudobulk <- paste0(io$acc_data_parsed,"/pseudobulk")
 io$acc.stats <- paste0(io$basedir,"/acc/results/stats/sample_stats.txt")
 io$acc.diff <- paste0(io$basedir,"/acc/results/differential/feature_level/lineages")
 

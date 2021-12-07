@@ -29,16 +29,16 @@ source(here::here("utils.R"))
 source(here::here("metacc/pseudobulk/utils.R"))
 
 ## START TEST ##
-args <- list()
-args$indir <- file.path(io$basedir,"processed/met/cpg_level")
-args$outdir <- file.path(io$basedir,"processed/met/cpg_level/pseudobulk")
-args$featuresdir  <- file.path(io$basedir,"features/genomic_contexts")
-args$metadata <- file.path(io$basedir,"results/met/qc/sample_metadata_after_met_qc.txt.gz")
-args$context <- "CG"
-args$group_by <- "sample"
-args$min_cells <- 25
-args$ncores <- 1
-args$test <- TRUE
+# args <- list()
+# args$indir <- file.path(io$basedir,"processed/met/cpg_level")
+# args$outdir <- file.path(io$basedir,"processed/met/cpg_level/pseudobulk")
+# args$featuresdir  <- file.path(io$basedir,"features/genomic_contexts")
+# args$metadata <- file.path(io$basedir,"results/met/qc/sample_metadata_after_met_qc.txt.gz")
+# args$context <- "CG"
+# args$group_by <- "sample"
+# args$min_cells <- 25
+# args$ncores <- 1
+# args$test <- TRUE
 ## END TEST ##
 
 # Sanity checks
@@ -113,3 +113,6 @@ for (i in unique(sample_metadata[[args$group_by]])) {
     fwrite(data, file=outfile, quote=F, col.names=T, sep="\t")
   }
 }
+
+# Completion token
+file.create(file.path(args$outdir,"completed.txt"))

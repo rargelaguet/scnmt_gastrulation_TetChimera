@@ -15,7 +15,6 @@ p$add_argument('--context',  type="character",              help='cg/CG or gc/GC
 p$add_argument('--annos',    type="character",  nargs="+",  help='Genomic annotation')
 p$add_argument('--test', action="store_true",             help='Test mode? subset number of cells')
 
-
 # Read arguments
 args <- p$parse_args(commandArgs(TRUE))
 
