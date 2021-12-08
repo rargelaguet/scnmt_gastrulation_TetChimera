@@ -54,7 +54,7 @@ sample_metadata <- fread(args$metadata)
 
 if (args$context=="CG") {
   sample_metadata <- sample_metadata %>% .[pass_metQC==TRUE]
-} else if (args$context=="GC") {
+} else {
   sample_metadata <- sample_metadata %>% .[pass_accQC==TRUE]
 }
 
@@ -84,7 +84,12 @@ for (i in unique(sample_metadata[[args$group_by]])) {
   } else {
     
     # Define input files 
-    cells <- sample_metadata[eval(as.name(args$group_by))==i,id_met]
+    if (args$context=="CG") {
+      cells <- sample_metadata[eval(as.name(args$group_by))==i,id_met]
+    } else {
+      cells <- sample_metadata[eval(as.name(args$group_by))==i,id_acc]
+    }
+    
     if (args$test) cells <- head(cells,n=5)
     
     # cells <- head(cells,n=2)

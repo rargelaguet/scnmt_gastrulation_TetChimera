@@ -4,7 +4,7 @@
 
 # Load genomic annotations
 anno_list <- list()
-for (i in names(opts$annos)) {
+for (i in args$anno) {
   tmp <- fread(sprintf("%s/%s.bed.gz",io$features.dir,i), 
                colClasses=c("V1"="character", "V2"="numeric", "V3"="numeric", "V4"="factor", "V5"="character","V6"="factor")) %>%
     setnames(c("chr","start","end","strand","id","anno")) %>%
@@ -24,7 +24,7 @@ for (i in names(opts$annos)) {
     tmp <- rbind(tmp[strand=="+",.(chr,end,strand,id,anno)][,center:=end][,c("end"):=NULL], 
                  tmp[strand=="-",.(chr,start,strand,id,anno)][,center:=start][,c("start"):=NULL])
   }
-  anno_list[[i]] <- tmp %>% .[, c("start","end") := list(center-opts$window_size,center+opts$window_size)]
+  anno_list[[i]] <- tmp %>% .[, c("start","end") := list(center-args$window_size,center+args$window_size)]
 }
 
 # Concatenate
@@ -32,5 +32,5 @@ anno_df <- rbindlist(anno_list) %>%
   # .[,chr:=as.factor(sub("chr","",chr))] %>%
   setkey(chr,start,end)
 
-rm(anno_list)
+rm(anno_list,tmp)
 

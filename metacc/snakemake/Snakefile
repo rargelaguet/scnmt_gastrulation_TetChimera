@@ -37,11 +37,10 @@ rule all:
         expand(config["directories"]["processed_data"]+"/met/feature_level/{genomic_context}.tsv.gz", genomic_context=config["genomic_contexts"]),
         expand(config["directories"]["processed_data"]+"/acc/feature_level/{genomic_context}.tsv.gz", genomic_context=config["genomic_contexts"]),
         expand(config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_{genomic_context}.pdf", genomic_context=config["genomic_contexts"]),
-        expand(config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_relative_{genomic_context}.pdf", genomic_context=config["genomic_contexts"])
-        # expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        # expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"])
-        # expand("%s/rna/mapping/mapping_seurat_{sample}.txt.gz" % config["directories"]["results"], sample=config["samples"])
-        # config["directories"]["results"]+"/rna/mapping/pdf/umap_mapped_allcells.pdf",
+        expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz"
+    
 
 #################################
 ## Calculate global statistics ##
@@ -203,7 +202,7 @@ rule qc_acc:
 
 rule parse_metadata_after_qc:
     input:
-        script=config["scripts"]["qc"],
+        script=config["scripts"]["parse_metadata_after_qc"],
         metadata_met = rules.qc_met.output,
         metadata_acc = rules.qc_acc.output
     output:
@@ -211,7 +210,7 @@ rule parse_metadata_after_qc:
     log: 
         "logs/parse_metadata_after_qc.log"
     threads: 1
-    resources: mem_mb = 200
+    resources: mem_mb = 1000
     shell:
         "Rscript {input.script} --metadata_met {input.metadata_met} --metadata_acc {input.metadata_acc} --outfile {output} > {log}"
 
@@ -269,7 +268,7 @@ rule quantify_acc_feature_level:
 rule boxplots_metacc_feature_level:
     input:
         script = config["scripts"]["boxplots_metacc_feature_level"],
-        met_file = config["directories"]["processed_data"]+"/acc/feature_level/{genomic_context}.tsv.gz",
+        met_file = config["directories"]["processed_data"]+"/met/feature_level/{genomic_context}.tsv.gz",
         acc_file = config["directories"]["processed_data"]+"/acc/feature_level/{genomic_context}.tsv.gz",
         metadata = rules.parse_metadata_after_qc.output
     output:
@@ -284,15 +283,56 @@ rule boxplots_metacc_feature_level:
     resources:
         mem_mb = config["slurm"]["quantify_feature_level"]["memory"]
     shell:
-        "Rscript {input.script} --met_file {input.met_file} --acc_file {input.acc_file} --metadata {input.metadata} --anno {wildcards.genomic_context} --outdir {params.outdir} > {log}"
+        "Rscript {input.script} --met_file {input.met_file} --acc_file {input.acc_file} --metadata {input.metadata} \
+        --anno {wildcards.genomic_context} --outdir {params.outdir} > {log}"
 
 ##################
 ## TSS profiles ##
 ##################
 
+rule calculate_tss_profiles:
+    input:
+        script = config["scripts"]["calculate_tss_profiles"],
+        metadata = rules.parse_metadata_after_qc.output
+    output:
+        config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz",
+    params:
+        window_size = config["params"]["calculate_tss_profiles"]["window_size"],
+        met_tile = config["params"]["calculate_tss_profiles"]["met_tile"],
+        acc_tile = config["params"]["calculate_tss_profiles"]["acc_tile"]
+    log: 
+        "logs/calculate_tss_profiles_prom_200_200.log"
+    threads: 
+        config["slurm"]["calculate_tss_profiles"]["threads"]
+    resources:
+        mem_mb = config["slurm"]["quantify_feature_level"]["memory"]
+    shell:
+        "Rscript {input.script} --met_tile {params.met_tile} --acc_tile {params.acc_tile} --window_size {params.window_size} --metadata {input.metadata} \
+        --anno prom_200_200 --outfile {output} > {log}"
+
+rule plot_tss_profiles:
+    input:
+        script = config["scripts"]["plot_tss_profiles"],
+        metadata = rules.parse_metadata_after_qc.output
+        file = rules.calculate_tss_profiles.output
+    output:
+        config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz",
+    params:
+        outdir = config["directories"]["results"]+"/metacc/tss_profiles/pdf"
+    log: 
+        "logs/plot_tss_profiles_prom_200_200.log"
+    threads: 
+        config["slurm"]["plot_tss_profiles"]["threads"]
+    resources:
+        mem_mb = config["slurm"]["quantify_feature_level"]["memory"]
+    shell:
+        "Rscript {input.script} --file {input.file} --metadata {input.metadata} --outdir {params.outdir} > {log}"
+
+
 ####################
 ## TSS enrichment ##
 ####################
+
 
 ################
 ## Pseudobulk ##
@@ -325,7 +365,7 @@ rule pseudobulk_met:
 rule pseudobulk_acc:
     input:
         script = config["scripts"]["pseudobulk"],
-        indir = config["directories"]["processed_data"]+"/acc/cpg_level",
+        indir = config["directories"]["processed_data"]+"/acc/gpc_level",
         featuresdir = config["directories"]["features"],
         metadata = rules.qc_acc.output
     output:

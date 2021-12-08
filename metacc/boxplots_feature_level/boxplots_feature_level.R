@@ -135,6 +135,6 @@ p <- ggplot(to.plot, aes(x = sample, y = rate_norm, fill=context)) +
     axis.text = element_text(color="black")
   )
 
-pdf(file.path(args$outdir,sprintf("boxplots_metacc_relative_%s.pdf",args$anno)), width=8, height=6)
+pdf(file.path(args$outdir,sprintf("boxplots_metacc_%s_relative.pdf",args$anno)), width=8, height=6)
 print(p)
 dev.off()

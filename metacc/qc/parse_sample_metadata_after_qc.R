@@ -21,10 +21,10 @@ args <- p$parse_args(commandArgs(TRUE))
 source(here::here("settings.R"))
 
 ## START TEST ##
-args <- list()
-args$metadata_met <- file.path(io$basedir,"results/met/qc/sample_metadata_after_met_qc.txt.gz")
-args$metadata_acc <- file.path(io$basedir,"results/acc/qc/sample_metadata_after_acc_qc.txt.gz")
-args$outfile  <- file.path(io$basedir,"results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
+# args <- list()
+# args$metadata_met <- file.path(io$basedir,"results/met/qc/sample_metadata_after_met_qc.txt.gz")
+# args$metadata_acc <- file.path(io$basedir,"results/acc/qc/sample_metadata_after_acc_qc.txt.gz")
+# args$outfile  <- file.path(io$basedir,"results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
 ## END TEST ##
 
 ###################

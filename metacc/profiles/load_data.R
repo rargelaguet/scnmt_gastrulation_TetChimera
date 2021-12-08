@@ -17,7 +17,7 @@ for (i in opts$met.cells) {
     foverlaps(.,anno_df, nomatch=0) %>% .[, c("chr","i.start","i.end") := NULL] %>%
     .[,id:=as.character(id)] %>%
     .[,dist:=ifelse(strand %in% c("+","*"),bp-center,center-bp)] %>% 
-    .[, dist:=opts$met.tile*round(dist/opts$met.tile)] %>%
+    .[, dist:=args$met_tile*round(dist/args$met_tile)] %>%
     .[,list(rate=100*mean(rate), N=.N),by=.(id_met,id,dist,anno)]
 }
 met.dt <- rbindlist(met_list) %>%
@@ -44,7 +44,7 @@ for (i in opts$acc.cells) {
     foverlaps(.,anno_df, nomatch=0) %>% .[, c("chr","i.start","i.end") := NULL] %>%
     .[,id:=as.character(id)] %>%
     .[,dist:=ifelse(strand %in% c("+","*"),bp-center,center-bp)] %>% 
-    .[, dist:=opts$acc.tile*round(dist/opts$acc.tile)] %>%
+    .[, dist:=args$acc_tile*round(dist/args$acc_tile)] %>%
     .[,list(rate=100*mean(rate), N=.N),by=.(id_acc,id,dist,anno)]
 }
 acc.dt <- rbindlist(acc_list) %>%

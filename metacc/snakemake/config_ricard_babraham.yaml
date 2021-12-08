@@ -68,9 +68,11 @@ scripts:
     plot_global_stats_per_cell: ../stats/plot_stats.R
     plot_chr_stats_per_cell: ../stats/plot_stats_per_chr.R
     qc: ../qc/qc.R
+    parse_metadata_after_qc: ../qc/parse_sample_metadata_after_qc.R
     quantify_feature_level: ../quantify_feature_level/quantify_feature_level.R
     pseudobulk: ../pseudobulk/pseudobulk_cpg_level.R
     boxplots_metacc_feature_level: ../boxplots_feature_level/boxplots_feature_level.R
+    calculate_tss_profiles: ../profiles/calculate_metacc_profiles.R
 
 
 ################
@@ -89,7 +91,10 @@ params:
     pseudobulk:
         group_by: ["sample"]
         min_cells: 15
-
+    calculate_tss_profiles:
+        window_size: 3000
+        met_tile: 100
+        acc_tile: 50
 
 ###########
 ## Slurm ##
@@ -112,8 +117,13 @@ slurm:  # memory in MB
         memory: 15000
         threads: 1
     pseudobulk: 
-        memory: 10000
+        memory: 25000
         threads: 1
     boxplots_metacc_feature_level: 
         memory: 5000
         threads: 1
+    calculate_tss_profiles: 
+        memory: 50000
+        threads: 1
+
+        
