@@ -49,6 +49,8 @@ directories:
     processed_data: /bi/group/reik/ricard/data/tet_chimera_nmtseq/processed
     results: /bi/group/reik/ricard/data/tet_chimera_nmtseq/results
     features: /bi/group/reik/ricard/data/tet_chimera_nmtseq/features/genomic_contexts
+    genome_seq: /bi/group/reik/ricard/data/mm10_sequence/mm10.genome
+    bedGraphToBigWig: "/bi/apps/ucsc_tools/5/bedGraphToBigWig"
 
 ###############
 ## Resources ##
@@ -73,6 +75,8 @@ scripts:
     pseudobulk: ../pseudobulk/pseudobulk_cpg_level.R
     boxplots_metacc_feature_level: ../boxplots_feature_level/boxplots_feature_level.R
     calculate_tss_profiles: ../profiles/calculate_metacc_profiles.R
+    plot_tss_profiles: ../profiles/plot_metacc_profiles.R
+    bigwig: ../bigwig/create_bigwig_pseudobulk.R
 
 
 ################
@@ -95,6 +99,9 @@ params:
         window_size: 3000
         met_tile: 100
         acc_tile: 50
+    bigwig_met:
+        step_size: 500
+        min_rate_bigwig: 10
 
 ###########
 ## Slurm ##
@@ -125,5 +132,9 @@ slurm:  # memory in MB
     calculate_tss_profiles: 
         memory: 50000
         threads: 1
-
-        
+    plot_tss_profiles: 
+        memory: 10000
+        threads: 1    
+    bigwig:
+        memory: 30000
+        threads: 1    

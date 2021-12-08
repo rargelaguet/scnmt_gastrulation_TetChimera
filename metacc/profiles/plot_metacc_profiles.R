@@ -57,7 +57,7 @@ sample_metadata <- fread(args$metadata)
 ## Plot TSS profiles one cell at a time ##
 ##########################################
 
-cells.to.plot <- unique(metacc.dt$cell) %>% head(n=5)
+cells.to.plot <- unique(metacc.dt$cell)# %>% head(n=5)
 
 opts$window_size <- max(metacc.dt$dist)
 

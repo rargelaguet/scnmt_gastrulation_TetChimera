@@ -1,3 +1,5 @@
+here::here("metacc/bigwig/create_bigwig_pseudobulk.R")
+
 suppressMessages(library(argparse))
 suppressMessages(library(GenomicRanges))
 suppressMessages(library(rtracklayer))
@@ -11,9 +13,14 @@ suppressMessages(library(BSgenome.Mmusculus.UCSC.mm10))
 p <- ArgumentParser(description='')
 p$add_argument('--indir',  type="character",              help='Input directory')
 p$add_argument('--outdir',  type="character",              help='Output directory')
-p$add_argument('--context',  type="character",              help='cg/CG or gc/GC')
+p$add_argument('--bedGraphToBigWig_binary',  type="character",              help='Output directory')
+p$add_argument('--genome_seq',  type="character",              help='Genome sequence file')
+p$add_argument('--samples',  type="character", nargs="+",  help='Samples')
+# p$add_argument('--window_size',  type="integer",              help='Window size')
+p$add_argument('--step_size',  type="integer",              help='Step size')
+p$add_argument('--min_rate_bigwig',  type="integer",              help='Minimum rate for the bigwig file')
+p$add_argument('--smooth_rates', action="store_true",             help='Smooth rates?')
 p$add_argument('--test', action="store_true",             help='Test mode? subset number of cells')
-
 
 # Read arguments
 args <- p$parse_args(commandArgs(TRUE))
@@ -27,62 +34,108 @@ source(here::here("utils.R"))
 
 ## START TEST ##
 # args <- list()
-# args$indir <- file.path(io$basedir,"processed/met/cpg_level")
-# args$outdir <- file.path(io$basedir,"processed/met/feature_level")
-# args$featuresdir  <- file.path(io$basedir,"features/genomic_contexts")
-# args$metadata <- file.path(io$basedir,"results/met/qc/sample_metadata_after_met_qc.txt.gz")
-# args$context <- "CG"
-# args$annos <- c("prom_2000_2000")
+# args$indir <- file.path(io$basedir,"processed/met/cpg_level/pseudobulk/sample")
+# args$outdir <- file.path(io$basedir,"processed/met/bigwig")
+# args$bedGraphToBigWig_binary <- "/bi/apps/ucsc_tools/5/bedGraphToBigWig"
+# args$samples <- c("E8.5_TET_TKO_CD41+")
+# args$genome_seq <- "/Users/argelagr/data/mm10_sequence/mm10.genome"
+# args$step_size <- 500
+# args$min_rate_bigwig <- 10
+# args$smooth_rates <- TRUE
+# args$test <- TRUE
 ## END TEST ##
 
 # Sanity checks
 stopifnot(args$context %in% c("CG","GC"))
 
+# I/O
+dir.create(args$outdir, showWarnings=F)
 
+# Options
+if (length(args$samples)==0) {
+  print(sprintf("Samples not provided. Reading samples from %s ...",args$indir))
+  args$samples <- list.files(args$indir, pattern="(.tsv.gz)$") %>% gsub(".tsv.gz","",.)
+  print(args$samples)
+} else {
+  stopifnot(args$samples%in%gsub(".tsv.gz","",list.files(args$indir, pattern="(.tsv.gz)$")))
+}
 
+if (args$test) {
+  print("Test mode activated, using only one sample and subsetting to chr1...")
+  args$samples <- args$samples[1] 
+  opts$chr <- c("chr1")
+}
 
-##############
-## ORIGINAL ##
-##############
+#############################
+## Load genome coordinates ##
+#############################
 
-io$outdir <- "/bi/scratch/Stephen_Clark/tet_chimera_nmtseq/met/pseudobulk"
-dir.create(io$outdir, recursive = TRUE)
+# genome <- fread(args$genome_seq) %>%
+#   setnames(c("chr","length")) %>%
+#   .[chr%in%opts$chr]
 
-#metadata <- fread(io$metadata)
+genome <- seqinfo(BSgenome.Mmusculus.UCSC.mm10)[opts$chr] %>% 
+  as.data.table(keep.rownames = T) %>% .[,c(1,2)] %>% setnames(c("chr","length"))
 
-infiles <- dir(
-  "/bi/scratch/Stephen_Clark/tet_chimera_nmtseq/met/raw/bigwigs/",
-  pattern = ".bw$",
-  full = TRUE
-) %>% 
-  data.table(file = ., plate = strsplit(., "_") %>% map_chr(6)) %>% 
-  split(by = "plate")
+###########################
+## Create running window ##
+###########################
 
-valid_chrs <- paste0("chr", c(1:19, "X", "Y"))
-seqs <- seqinfo(BSgenome.Mmusculus.UCSC.mm10) %>% .[valid_chrs]
+genomic_windows.dt <- opts$chr %>%  map(function(x) 
+  data.table(chr=x, start=seq(from=1, to=genome[chr==x,length], by=args$step_size)) %>% 
+    # .[,end:=start+args$window_size] %>%
+    .[,end:=start+args$step_size-1] %>%
+    .[,c("start","end"):=list(as.integer(start),as.integer(end))]
+) %>% rbindlist %>% setkey(chr,start,end)
 
+#####################################################
+## Load pseudobulk data, overlap and export bigwig ##
+#####################################################
 
-walk(names(infiles), ~{
-  files <- infiles[[.x]][, file]
+# TO-DO: TRY ADJUSTING BY THE BACKGROUND RATE
+
+for (i in args$samples) {
+
+  # Load data
+  data.dt <- fread(sprintf("%s/%s.tsv.gz",args$indir,i)) %>%
+      .[,c("chr","pos","rate")] %>%
+      .[chr%in%opts$chr & !is.na(pos)] %>% 
+      .[,c("start","end"):=pos] %>% .[,pos:=NULL] %>%
+    setkey(chr,start,end)
   
-  gr <- map(files, import.bw) %>% 
-    map(as.data.table) %>% 
-    map(~.x[, .(
-      id = paste(seqnames, start, end, sep = "_"),
-      score
-    )]) %>% 
-    map2(basename(files), ~setnames(.x, "score", .y)) %>% 
-    purrr::reduce(merge, by = c("id"), all = TRUE) %>% 
-    .[, .(id = id, score = apply(.SD, 1, mean, na.rm = TRUE)), .SDcol = colnames(.)[2:ncol(.)]] %>% 
-    tidyr::separate("id", c("chr", "start", "end")) %>% 
-    makeGRangesFromDataFrame(keep.extra.columns = TRUE, seqinfo = seqs)
+  # Overlap and quantify rates per genomic window
+  tmp <- foverlaps(data.dt, genomic_windows.dt) %>%
+    .[,.(rate=as.integer(round(mean(rate),0))), by=c("chr","start","end")] %>%
+    setorder(chr,start,end)
   
-  outfile <- paste0(io$outdir, "/", .x, ".bw")
-  export.bw(gr, outfile)
-})
+  # Smooth rates
+  if (args$smooth_rates)  {
+    tmp %>% 
+      .[,rolling_mean:=round(frollmean(rate,n=3, align="center"),0)] %>% 
+      .[is.na(rolling_mean),rolling_mean:=rate] %>%
+      .[,rate:=NULL] %>% setnames("rolling_mean","rate")
+  }
+  
+  # Cap rates
+  tmp %>% .[rate<args$min_rate_bigwig,rate:=args$min_rate_bigwig]
+  
+  # Sanity checks
+  stopifnot(tmp$end-tmp$start>0)
+  
+  # Save
+  fwrite(tmp, file.path(args$outdir,sprintf("%s.bedgraph",i)), sep="\t", col.names=F, quote=F)
+  
+  # Convert to bigwig
+  system(sprintf("bedGraphToBigWig %s/%s.bedgraph %s %s/%s.bw",args$outdir,i,args$genome_seq,args$outdir,i))
+  
+  # Check that bigwig file exists
+  stopifnot(file.exists(file.path(args$outdir,sprintf("%s.bw",i))))
+  
+  # Remove bedgraph
+  file.remove(file.path(args$outdir,sprintf("%s.bedgraph",i)))
+  
+}
 
 
-
-
-
-
+# Completion token
+file.create(file.path(args$outdir,"completed.txt"))

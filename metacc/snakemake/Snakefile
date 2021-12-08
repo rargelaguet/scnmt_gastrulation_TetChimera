@@ -39,7 +39,9 @@ rule all:
         expand(config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_{genomic_context}.pdf", genomic_context=config["genomic_contexts"]),
         expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
         expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz"
+        config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz",
+        # config["directories"]["results"]+"/metacc/tss_profiles/pdf/CG_ratio_vs_GC_ratio_coloured_by_nCG.pdf",
+        expand(config["directories"]["processed_data"]+"/met/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"])
     
 
 #################################
@@ -261,6 +263,7 @@ rule quantify_acc_feature_level:
 ## Sex assignment ##
 ####################
 
+
 ##############################################
 ## Boxplots of met/acc at the feature level ##
 ##############################################
@@ -313,10 +316,10 @@ rule calculate_tss_profiles:
 rule plot_tss_profiles:
     input:
         script = config["scripts"]["plot_tss_profiles"],
-        metadata = rules.parse_metadata_after_qc.output
+        metadata = rules.parse_metadata_after_qc.output,
         file = rules.calculate_tss_profiles.output
     output:
-        config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz",
+        config["directories"]["results"]+"/metacc/tss_profiles/pdf/CG_ratio_vs_GC_ratio_coloured_by_nCG.pdf"
     params:
         outdir = config["directories"]["results"]+"/metacc/tss_profiles/pdf"
     log: 
@@ -327,12 +330,6 @@ rule plot_tss_profiles:
         mem_mb = config["slurm"]["quantify_feature_level"]["memory"]
     shell:
         "Rscript {input.script} --file {input.file} --metadata {input.metadata} --outdir {params.outdir} > {log}"
-
-
-####################
-## TSS enrichment ##
-####################
-
 
 ################
 ## Pseudobulk ##
@@ -384,4 +381,36 @@ rule pseudobulk_acc:
     shell:
         "Rscript {input.script} --indir {input.indir} --metadata {input.metadata} --context GC --group_by {wildcards.pseudobulk_group_by} \
         --ncores {params.ncores} --min_cells {params.min_cells} --outdir {params.outdir} > {log}"
+
+
+
+############
+## Bigwig ##
+############
+
+rule generate_bigwig_files_met:
+    input:
+        rules.pseudobulk_met.output,
+        script = config["scripts"]["bigwig"],
+        indir = config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}",
+    output:
+        config["directories"]["processed_data"]+"/met/bigwig/{pseudobulk_group_by}/completed.txt"
+    params:
+        outdir = config["directories"]["processed_data"]+"/met/bigwig/{pseudobulk_group_by}",
+        bedGraphToBigWig=config["directories"]["bedGraphToBigWig"],
+        genome_seq = config["directories"]["genome_seq"],
+        step_size = config["params"]["bigwig_met"]["step_size"],
+        min_rate_bigwig = config["params"]["bigwig_met"]["min_rate_bigwig"]
+    log: 
+        "logs/generate_bigwig_files_met_{pseudobulk_group_by}.log"
+    threads: 
+        config["slurm"]["bigwig"]["threads"]
+    resources:
+        mem_mb = config["slurm"]["bigwig"]["memory"]
+    shell:
+        "Rscript {input.script} --indir {input.indir} --bedGraphToBigWig {params.bedGraphToBigWig} \
+        --genome_seq {params.genome_seq} --step_size {params.step_size} --min_rate_bigwig {params.min_rate_bigwig} \
+        --outdir {params.outdir} --smooth_rates --test > {log}"
+
+
 
