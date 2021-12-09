@@ -27,15 +27,15 @@ source(here::here("settings.R"))
 source(here::here("utils.R"))
 
 ## START TEST ##
-args <- list()
-args$metadata <- file.path(io$basedir,"results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
-args$tss <- "/Users/argelagr/data/mm10_regulation/genes/TSS_protein_coding.bed"
-args$up <- 3000
-args$down <- 3000
-args$window <- 150
-args$tile <- 50
-args$test <- FALSE
-args$outfile  <- file.path(io$basedir,"results/metacc/coupling/precomputed_metacc_tss_coupling.txt.gz")
+# args <- list()
+# args$metadata <- file.path(io$basedir,"results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
+# args$tss <- "/Users/argelagr/data/mm10_regulation/genes/TSS_protein_coding.bed"
+# args$up <- 3000
+# args$down <- 3000
+# args$window <- 150
+# args$tile <- 50
+# args$test <- FALSE
+# args$outfile  <- file.path(io$basedir,"results/metacc/coupling/precomputed_metacc_tss_coupling.txt.gz")
 ## END TEST ##
 
 # I/O

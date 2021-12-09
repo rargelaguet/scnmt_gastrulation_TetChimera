@@ -43,8 +43,11 @@ rule all:
         # expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
         config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz",
         # config["directories"]["results"]+"/metacc/tss_profiles/pdf/CG_ratio_vs_GC_ratio_coloured_by_nCG.pdf",
-        expand(config["directories"]["processed_data"]+"/met/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"])
+        expand(config["directories"]["processed_data"]+"/met/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
         # expand(config["directories"]["processed_data"]+"/acc/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"])
+        config["directories"]["results"]+"/metrna/coupling/precomputed_metrna_coupling.txt.gz",
+        config["directories"]["results"]+"/metacc/coupling/precomputed_metacc_coupling.txt.gz",
+        config["directories"]["results"]+"/accrna/coupling/precomputed_accrna_coupling.txt.gz"
     
 
 #################################
@@ -439,35 +442,48 @@ rule generate_bigwig_files_acc:
         --outdir {params.outdir} --smooth_rates --test > {log}"
 
 
-####################
-## Sex assignment ##
-####################
-
-##############################
-## Dimensionality reduction ##
-##############################
-
 ##############
 ## Coupling ##
 ##############
 
-rule generate_bigwig_files_met:
+rule calculate_metacc_coupling:
     input:
-        # rules.pseudobulk_met.output,
+        script = config["scripts"]["metacc_coupling"],
+        metadata = rules.parse_metadata_after_qc.output,
+        tss_file = config["directories"]["tss_file"]
+    output:
+        config["directories"]["results"]+"/metacc/coupling/precomputed_metacc_coupling.txt.gz"
+    params:
+        up = config["params"]["metacc_coupling"]["up"],
+        down = config["params"]["metacc_coupling"]["down"],
+        window = config["params"]["metacc_coupling"]["window"],
+        tile = config["params"]["metacc_coupling"]["tile"]
+    log: 
+        "logs/calculate_metacc_coupling.log"
+    threads: 
+        config["slurm"]["metacc_coupling"]["threads"]
+    resources:
+        mem_mb = config["slurm"]["metacc_coupling"]["memory"]
+    shell:
+        "Rscript {input.script} --metadata {input.metadata} --tss {input.tss_file} \
+        --up {params.up} --down {params.down} --window {params.window} --tile {params.tile} \
+        --outfile {output} --test > {log}"
+
+rule calculate_metrna_coupling:
+    input:
         script = config["scripts"]["metrna_coupling"],
         metadata = rules.parse_metadata_after_qc.output,
         sce = config["directories"]["rna_SingleCellExperiment"],
         tss_file = config["directories"]["tss_file"]
     output:
-        config["directories"]["results"]+"metrna/coupling/precomputed_metrna_coupling.txt.gz"
+        config["directories"]["results"]+"/metrna/coupling/precomputed_metrna_coupling.txt.gz"
     params:
         up = config["params"]["metrna_coupling"]["up"],
         down = config["params"]["metrna_coupling"]["down"],
         window = config["params"]["metrna_coupling"]["window"],
-        tile = config["params"]["metrna_coupling"]["tile"],
-        min_rate_bigwig = config["params"]["metrna_coupling"]["min_rate_bigwig"]
+        tile = config["params"]["metrna_coupling"]["tile"]
     log: 
-        "logs/generate_bigwig_files_met_{pseudobulk_group_by}.log"
+        "logs/calculate_metrna_coupling.log"
     threads: 
         config["slurm"]["metrna_coupling"]["threads"]
     resources:
@@ -475,8 +491,31 @@ rule generate_bigwig_files_met:
     shell:
         "Rscript {input.script} --sce {input.sce} --metadata {input.metadata} --tss {input.tss_file} \
         --up {params.up} --down {params.down} --window {params.window} --tile {params.tile} \
-        --outfile {output} --test > {log}"
+        --outfile {output} > {log}"
 
+rule calculate_accrna_coupling:
+    input:
+        script = config["scripts"]["accrna_coupling"],
+        metadata = rules.parse_metadata_after_qc.output,
+        sce = config["directories"]["rna_SingleCellExperiment"],
+        tss_file = config["directories"]["tss_file"]
+    output:
+        config["directories"]["results"]+"/accrna/coupling/precomputed_accrna_coupling.txt.gz"
+    params:
+        up = config["params"]["accrna_coupling"]["up"],
+        down = config["params"]["accrna_coupling"]["down"],
+        window = config["params"]["accrna_coupling"]["window"],
+        tile = config["params"]["accrna_coupling"]["tile"]
+    log: 
+        "logs/calculate_accrna_coupling.log"
+    threads: 
+        config["slurm"]["accrna_coupling"]["threads"]
+    resources:
+        mem_mb = config["slurm"]["accrna_coupling"]["memory"]
+    shell:
+        "Rscript {input.script} --sce {input.sce} --metadata {input.metadata} --tss {input.tss_file} \
+        --up {params.up} --down {params.down} --window {params.window} --tile {params.tile} \
+        --outfile {output} > {log}"
 
 ####################
 ## Motif analysis ##
@@ -486,3 +525,10 @@ rule generate_bigwig_files_met:
 ## Plot individual features ##
 ##############################
 
+####################
+## Sex assignment ##
+####################
+
+##############################
+## Dimensionality reduction ##
+##############################

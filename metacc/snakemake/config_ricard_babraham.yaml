@@ -117,6 +117,16 @@ params:
         down: 3000
         window: 150
         tile: 50
+    metacc_coupling:
+        up: 3000
+        down: 3000
+        window: 150
+        tile: 50
+    accrna_coupling:
+        up: 3000
+        down: 3000
+        window: 100
+        tile: 50
 
 ###########
 ## Slurm ##

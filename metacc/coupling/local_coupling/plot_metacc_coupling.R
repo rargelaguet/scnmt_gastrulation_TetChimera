@@ -42,11 +42,6 @@ dir.create(file.path(args$outdir,"per_sample"), showWarnings = F)
 sample_metadata <- fread(args$metadata) %>%
   .[pass_metQC==TRUE & pass_accQC==TRUE]
 
-# # [TESTING MODE] Subset cells
-# if (args$test) {
-#   sample_metadata <- sample_metadata %>% .[,head(.SD,n=3),by="sample"]
-# }
-
 ###########################
 ## Load precomputed data ##
 ###########################
@@ -83,26 +78,22 @@ for (i in cells.to.plot) {
 ## Plot per sample ##
 #####################
 
-samples.to.plot <- unique(sample_metadata$sample)
+to.plot <- metacc_coupling.dt %>% 
+  merge(sample_metadata[,c("cell","sample")]) %>%
+  .[,.(r=mean(r,na.rm=T)), by=c("window_center","sample")]
 
-for (i in samples.to.plot) {
-  
-  to.plot <- metacc_coupling.dt[cell%in%sample_metadata[sample==i,cell]]  %>%
-    .[,.(r=mean(r,na.rm=T)), by="window_center"]
+p <- ggplot(to.plot, aes(x=window_center, y=r, color=sample)) +
+  geom_line(size=1) +
+  geom_hline(yintercept=0, linetype="dashed", color="black", size=0.5) +
+  geom_vline(xintercept=0, linetype="dashed", color="black", size=0.5) +
+  scale_color_brewer(palette="Dark2") +
+  labs(x="Genomic distance from TSS (bp)", y="Met/Acc correlation") +
+  theme_classic() +
+  theme(
+    legend.title = element_blank(),
+    axis.text = element_text(color="black", size=rel(0.8))
+  )
 
-  p <- ggplot(to.plot, aes(x=window_center, y=r)) +
-    geom_line(size=1.5) +
-    # stat_summary(fun.data=mean_sd, geom="smooth", alpha=0.2, size=1.0, color="black", fill="black") +
-    geom_hline(yintercept=0, linetype="dashed", color="black", size=0.5) +
-    geom_vline(xintercept=0, linetype="dashed", color="black", size=0.5) +
-    labs(x="Genomic distance from TSS (bp)", y="Met/Acc correlation") +
-    coord_cartesian(ylim=c(-0.4,0.05)) +
-    theme_classic() +
-    theme(
-      axis.text = element_text(color="black", size=rel(0.8))
-    )
-
-  pdf(file.path(args$outdir,sprintf("per_sample/%s.pdf",i)), width=6, height=5)
-  print(p)
-  dev.off()
-}
+pdf(file.path(args$outdir,"metacc_coupling_per_sample.pdf"), width=8, height=5)
+print(p)
+dev.off()

@@ -39,7 +39,7 @@ dir.create(args$outdir, showWarnings = F)
 ##########################
 
 sample_metadata <- fread(args$metadata) %>%
-  .[pass_metQC==TRUE & pass_rnaQC==TRUE]
+  .[pass_accQC==TRUE & pass_rnaQC==TRUE]
 
 ###########################
 ## Load precomputed data ##
@@ -81,7 +81,7 @@ to.plot <- accrna_coupling.dt %>%
   .[,.(r=mean(r,na.rm=T)), by=c("window_center","sample")]
 
 p <- ggplot(to.plot, aes(x=window_center, y=r, color=sample)) +
-  geom_line(size=1.25) +
+  geom_line(size=1) +
   geom_hline(yintercept=0, linetype="dashed", color="black", size=0.5) +
   geom_vline(xintercept=0, linetype="dashed", color="black", size=0.5) +
   scale_color_brewer(palette="Dark2") +
