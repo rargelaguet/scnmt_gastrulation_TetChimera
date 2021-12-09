@@ -86,7 +86,7 @@ for (i in cells.to.plot) {
     )
   # print(p_list[[i]])
   
-  pdf(file.path(args$outdir,sprintf("per_plate/%s.pdf",i)), width=6, height=5)
+  pdf(file.path(args$outdir,sprintf("per_cell/%s.pdf",i)), width=6, height=5)
   print(p)
   dev.off()
 }
@@ -126,7 +126,7 @@ for (i in plates.to.plot) {
     )
   # print(p_list[[i]])
   
-  pdf(file.path(args$outdir,sprintf("per_cell/%s.pdf",i)), width=6, height=5)
+  pdf(file.path(args$outdir,sprintf("per_plate/%s.pdf",i)), width=6, height=5)
   print(p)
   dev.off()
 }

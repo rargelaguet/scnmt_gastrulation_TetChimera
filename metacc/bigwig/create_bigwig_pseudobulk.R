@@ -34,12 +34,12 @@ source(here::here("utils.R"))
 
 ## START TEST ##
 # args <- list()
-# args$indir <- file.path(io$basedir,"processed/met/cpg_level/pseudobulk/sample")
-# args$outdir <- file.path(io$basedir,"processed/met/bigwig")
+# args$indir <- file.path(io$basedir,"processed/acc/gpc_level/pseudobulk/sample")
+# args$outdir <- file.path(io$basedir,"processed/acc/bigwig")
 # args$bedGraphToBigWig_binary <- "/bi/apps/ucsc_tools/5/bedGraphToBigWig"
-# args$samples <- c("E8.5_TET_TKO_CD41+")
+# args$samples <- c("E8.5_TET_TKO")
 # args$genome_seq <- "/Users/argelagr/data/mm10_sequence/mm10.genome"
-# args$step_size <- 500
+# args$step_size <- 100
 # args$min_rate_bigwig <- 10
 # args$smooth_rates <- TRUE
 # args$test <- TRUE
@@ -96,8 +96,10 @@ genomic_windows.dt <- opts$chr %>%  map(function(x)
 
 for (i in args$samples) {
 
+  print(i)
+  
   # Load data
-  data.dt <- fread(sprintf("%s/%s.tsv.gz",args$indir,i)) %>%
+  data.dt <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), showProgress = F) %>%
       .[,c("chr","pos","rate")] %>%
       .[chr%in%opts$chr & !is.na(pos)] %>% 
       .[,c("start","end"):=pos] %>% .[,pos:=NULL] %>%

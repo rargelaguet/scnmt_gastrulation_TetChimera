@@ -50,7 +50,8 @@ dir.create(args$outdir, showWarnings = F)
 ## Load metadata ##
 ###################
 
-sample_metadata <- fread(args$metadata)
+sample_metadata <- fread(args$metadata) %>%
+  .[,celltype_class:=sprintf("%s_%s",celltype.mapped_mnn,class)]
 
 if (args$context=="CG") {
   sample_metadata <- sample_metadata %>% .[pass_metQC==TRUE]
@@ -61,9 +62,10 @@ if (args$context=="CG") {
 stopifnot(args$group_by%in%colnames(sample_metadata))
 sample_metadata <- sample_metadata[!is.na(sample_metadata[[args$group_by]])]
 
-
 # Filter groups by minimum number of cells
 sample_metadata <- sample_metadata[,N:=.N,by=c(args$group_by)] %>% .[N>=args$min_cells] %>% .[,N:=NULL]
+
+table(sample_metadata[[args$group_by]])
 
 ##############################
 ## Load data and pseudobulk ##
@@ -120,4 +122,12 @@ for (i in unique(sample_metadata[[args$group_by]])) {
 }
 
 # Completion token
-file.create(file.path(args$outdir,"completed.txt"))
+# file.create(file.path(args$outdir,"completed.txt"))
+
+###########################
+## Save group statistics ##
+###########################
+
+tmp <- table(sample_metadata[[args$group_by]])
+to_save.dt <- data.table(group=names(tmp), N=tmp)
+fwrite(to_save.dt, file=file.path(args$outdir,"stats.txt"), quote=F, col.names=T, sep="\t")

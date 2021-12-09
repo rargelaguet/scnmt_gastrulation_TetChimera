@@ -450,3 +450,5 @@ pseudobulk_sce_fn <- function(x, assay = NULL, by, fun = c("sum", "mean", "media
   return(ys)
 }
 
+
+mean_sd <- function(x) data.frame(y=mean(x), ymin=mean(x)-sd(x)/2, ymax=mean(x)+sd(x)/2) 

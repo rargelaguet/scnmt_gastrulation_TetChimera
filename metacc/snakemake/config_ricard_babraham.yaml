@@ -51,6 +51,8 @@ directories:
     features: /bi/group/reik/ricard/data/tet_chimera_nmtseq/features/genomic_contexts
     genome_seq: /bi/group/reik/ricard/data/mm10_sequence/mm10.genome
     bedGraphToBigWig: "/bi/apps/ucsc_tools/5/bedGraphToBigWig"
+    rna_SingleCellExperiment: /bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/rna_new/SingleCellExperiment.rds
+    tss_file: /bi/group/reik/ricard/data/mm10_regulation/genes/TSS_protein_coding.bed
 
 ###############
 ## Resources ##
@@ -77,6 +79,10 @@ scripts:
     calculate_tss_profiles: ../profiles/calculate_metacc_profiles.R
     plot_tss_profiles: ../profiles/plot_metacc_profiles.R
     bigwig: ../bigwig/create_bigwig_pseudobulk.R
+    metrna_coupling: ../../metrna/coupling/local_coupling/calculate_metrna_coupling.R
+    metacc_coupling: ../../metacc/coupling/local_coupling/calculate_metacc_coupling.R
+    accrna_coupling: ../../accrna/coupling/local_coupling/calculate_accrna_coupling.R
+
 
 
 ################
@@ -93,7 +99,8 @@ params:
         min_rate: 10
         max_rate: 40
     pseudobulk:
-        group_by: ["sample"]
+        # group_by: ["sample","celltype_class"]
+        group_by: ["celltype_class"]
         min_cells: 15
     calculate_tss_profiles:
         window_size: 3000
@@ -102,6 +109,14 @@ params:
     bigwig_met:
         step_size: 500
         min_rate_bigwig: 10
+    bigwig_acc:
+        step_size: 100
+        min_rate_bigwig: 5
+    metrna_coupling:
+        up: 3000
+        down: 3000
+        window: 150
+        tile: 50
 
 ###########
 ## Slurm ##
@@ -135,6 +150,18 @@ slurm:  # memory in MB
     plot_tss_profiles: 
         memory: 10000
         threads: 1    
-    bigwig:
-        memory: 30000
+    bigwig_met:
+        memory: 20000
         threads: 1    
+    bigwig_acc:
+        memory: 50000
+        threads: 1    
+    metrna_coupling:
+        memory: 20000
+        threads: 1   
+    accrna_coupling:
+        memory: 30000
+        threads: 1   
+    metacc_coupling:
+        memory: 30000
+        threads: 1   
