@@ -1,7 +1,5 @@
 here::here("metrna/coupling/local_coupling/calculate_metrna_coupling.R")
 
-suppressMessages(library(argparse))
-
 ######################
 ## Define arguments ##
 ######################

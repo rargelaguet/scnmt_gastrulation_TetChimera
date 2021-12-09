@@ -167,11 +167,11 @@ slurm:  # memory in MB
         memory: 50000
         threads: 1    
     metrna_coupling:
-        memory: 20000
+        memory: 3000
         threads: 1   
     accrna_coupling:
-        memory: 30000
+        memory: 6000
         threads: 1   
     metacc_coupling:
-        memory: 30000
+        memory: 8000
         threads: 1   

@@ -1,6 +1,9 @@
 here::here("metacc/quantify_feature_level/quantify_feature_level.R")
 
-suppressMessages(library(argparse))
+# Load default settings
+source(here::here("settings.R"))
+source(here::here("utils.R"))
+
 
 ######################
 ## Define arguments ##
@@ -18,12 +21,9 @@ p$add_argument('--test', action="store_true",             help='Test mode? subse
 # Read arguments
 args <- p$parse_args(commandArgs(TRUE))
 
-###################
-## Load settings ##
-###################
-
-source(here::here("settings.R"))
-source(here::here("utils.R"))
+#####################
+## Define settings ##
+#####################
 
 ## START TEST ##
 # args <- list()

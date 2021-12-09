@@ -1,10 +1,12 @@
 here::here("metacc/bigwig/create_bigwig_pseudobulk.R")
 
-suppressMessages(library(argparse))
 suppressMessages(library(GenomicRanges))
 suppressMessages(library(rtracklayer))
 suppressMessages(library(BSgenome.Mmusculus.UCSC.mm10))
 
+# Load default settings
+source(here::here("settings.R"))
+source(here::here("utils.R"))
 
 ######################
 ## Define arguments ##
@@ -25,12 +27,9 @@ p$add_argument('--test', action="store_true",             help='Test mode? subse
 # Read arguments
 args <- p$parse_args(commandArgs(TRUE))
 
-###################
-## Load settings ##
-###################
-
-source(here::here("settings.R"))
-source(here::here("utils.R"))
+#####################
+## Define settings ##
+#####################
 
 ## START TEST ##
 # args <- list()

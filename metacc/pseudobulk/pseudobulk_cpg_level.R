@@ -1,7 +1,11 @@
 here::here("metacc/pseudobulk/pseudobulk_cpg_level.R")
 
-suppressMessages(library(argparse))
 suppressMessages(library(furrr))
+
+# Load default settings
+source(here::here("settings.R"))
+source(here::here("utils.R"))
+
 
 ######################
 ## Define arguments ##
@@ -20,12 +24,10 @@ p$add_argument('--test',    action="store_true",             help='Test mode? su
 # Read arguments
 args <- p$parse_args(commandArgs(TRUE))
 
-###################
-## Load settings ##
-###################
+#####################
+## Define settings ##
+#####################
 
-source(here::here("settings.R"))
-source(here::here("utils.R"))
 source(here::here("metacc/pseudobulk/utils.R"))
 
 ## START TEST ##

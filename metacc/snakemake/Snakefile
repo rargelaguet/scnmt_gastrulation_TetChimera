@@ -467,7 +467,7 @@ rule calculate_metacc_coupling:
     shell:
         "Rscript {input.script} --metadata {input.metadata} --tss {input.tss_file} \
         --up {params.up} --down {params.down} --window {params.window} --tile {params.tile} \
-        --outfile {output} --test > {log}"
+        --outfile {output} > {log}"
 
 rule calculate_metrna_coupling:
     input:

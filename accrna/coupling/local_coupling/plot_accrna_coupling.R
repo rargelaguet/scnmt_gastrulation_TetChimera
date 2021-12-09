@@ -1,7 +1,5 @@
 here::here("accrna/coupling/local_coupling/plot_accrna_coupling.R")
 
-suppressMessages(library(argparse))
-
 ######################
 ## Define arguments ##
 ######################

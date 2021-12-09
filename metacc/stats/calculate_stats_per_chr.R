@@ -1,6 +1,9 @@
-suppressPackageStartupMessages(library(argparse))
-
 here::here("metacc/stats/calculate_stats_per_chr.R")
+
+# Load default settings
+source(here::here("settings.R"))
+source(here::here("utils.R"))
+
 
 ######################
 ## Define arguments ##
@@ -18,9 +21,6 @@ args <- p$parse_args(commandArgs(TRUE))
 #####################
 ## Define settings ##
 #####################
-
-source(here::here("settings.R"))
-source(here::here("utils.R"))
 
 ## START TEST ##
 # args <- list()

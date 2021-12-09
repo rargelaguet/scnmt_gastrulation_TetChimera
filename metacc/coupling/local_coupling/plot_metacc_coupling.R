@@ -1,6 +1,9 @@
 here::here("metacc/coupling/plot_metacc_coupling.R")
 
-suppressMessages(library(argparse))
+# Load default settings
+source(here::here("settings.R"))
+source(here::here("utils.R"))
+
 
 ######################
 ## Define arguments ##
@@ -15,11 +18,8 @@ p$add_argument('--outdir',  type="character",    help='Output directory')
 args <- p$parse_args(commandArgs(TRUE))
 
 ###################
-## Load settings ##
+## Define settings ##
 ###################
-
-source(here::here("settings.R"))
-source(here::here("utils.R"))
 
 ## START TEST ##
 args <- list()
@@ -31,7 +31,6 @@ args$outdir  <- file.path(io$basedir,"results/metacc/coupling")
 # I/O
 dir.create(args$outdir, showWarnings = F)
 dir.create(file.path(args$outdir,"per_cell"), showWarnings = F)
-dir.create(file.path(args$outdir,"per_sample"), showWarnings = F)
 
 # Options
 
@@ -46,33 +45,33 @@ sample_metadata <- fread(args$metadata) %>%
 ## Load precomputed data ##
 ###########################
 
-metacc_coupling.dt <- fread(args$file)# %>% .[cell%in%sample_metadata$cell]
+metacc_coupling.dt <- fread(args$file)
 
 ###################
 ## Plot per cell ##
 ###################
 
-cells.to.plot <- unique(metacc_coupling.dt$cell)# %>% head(n=5)
-
-for (i in cells.to.plot) {
-  
-  to.plot <- metacc_coupling.dt[cell==i]
-
-  p <- ggplot(to.plot, aes(x=window_center, y=r)) +
-    stat_summary(fun.data=mean_sd, geom="smooth", alpha=0.2, size=1.0, color="black", fill="black") +
-    geom_hline(yintercept=0, linetype="dashed", color="black", size=0.5) +
-    geom_vline(xintercept=0, linetype="dashed", color="black", size=0.5) +
-    labs(x="Genomic distance from TSS (bp)", y="Met/Acc correlation") +
-    coord_cartesian(ylim=c(-0.75,0.5)) +
-    theme_classic() +
-    theme(
-      axis.text = element_text(color="black", size=rel(0.8))
-    )
-  
-  pdf(file.path(args$outdir,sprintf("per_cell/%s.pdf",i)), width=6, height=5)
-  print(p)
-  dev.off()
-}
+# cells.to.plot <- unique(metacc_coupling.dt$cell)# %>% head(n=5)
+# 
+# for (i in cells.to.plot) {
+#   
+#   to.plot <- metacc_coupling.dt[cell==i]
+# 
+#   p <- ggplot(to.plot, aes(x=window_center, y=r)) +
+#     stat_summary(fun.data=mean_sd, geom="smooth", alpha=0.2, size=1.0, color="black", fill="black") +
+#     geom_hline(yintercept=0, linetype="dashed", color="black", size=0.5) +
+#     geom_vline(xintercept=0, linetype="dashed", color="black", size=0.5) +
+#     labs(x="Genomic distance from TSS (bp)", y="Met/Acc correlation") +
+#     coord_cartesian(ylim=c(-0.75,0.5)) +
+#     theme_classic() +
+#     theme(
+#       axis.text = element_text(color="black", size=rel(0.8))
+#     )
+#   
+#   pdf(file.path(args$outdir,sprintf("per_cell/%s.pdf",i)), width=6, height=5)
+#   print(p)
+#   dev.off()
+# }
 
 #####################
 ## Plot per sample ##

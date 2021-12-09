@@ -1,6 +1,9 @@
 here::here("metacc/profiles/calculate_metacc_profiles.R")
 
-suppressMessages(library(argparse))
+# Load default settings
+source(here::here("settings.R"))
+source(here::here("utils.R"))
+
 
 ######################
 ## Define arguments ##
@@ -19,11 +22,8 @@ p$add_argument('--outfile',  type="character",              help='Output file')
 args <- p$parse_args(commandArgs(TRUE))
 
 ###################
-## Load settings ##
+## Define settings ##
 ###################
-
-source(here::here("settings.R"))
-source(here::here("utils.R"))
 
 ## START TEST ##
 # args <- list()

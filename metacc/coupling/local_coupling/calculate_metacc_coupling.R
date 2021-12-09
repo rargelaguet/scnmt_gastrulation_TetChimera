@@ -1,6 +1,9 @@
 here::here("metacc/coupling/calculate_metacc_coupling.R")
 
-suppressMessages(library(argparse))
+# Load default settings
+source(here::here("settings.R"))
+source(here::here("utils.R"))
+
 
 ######################
 ## Define arguments ##
@@ -22,9 +25,6 @@ args <- p$parse_args(commandArgs(TRUE))
 ###################
 ## Load settings ##
 ###################
-
-source(here::here("settings.R"))
-source(here::here("utils.R"))
 
 ## START TEST ##
 # args <- list()

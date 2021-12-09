@@ -2,6 +2,11 @@ suppressPackageStartupMessages(library(argparse))
 
 here::here("metacc/qc/qc.R")
 
+# Load default settings
+source(here::here("settings.R"))
+source(here::here("utils.R"))
+
+
 ######################
 ## Define arguments ##
 ######################
@@ -17,8 +22,6 @@ args <- p$parse_args(commandArgs(TRUE))
 #####################
 ## Define settings ##
 #####################
-
-source(here::here("settings.R"))
 
 ## START TEST ##
 # args <- list()
