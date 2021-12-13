@@ -1,4 +1,6 @@
-suppressPackageStartupMessages(library(argparse))
+here::i_am("rna/processing/2_QC.R")
+
+source(here::here("settings.R"))
 
 #####################
 ## Define arguments ##
@@ -17,8 +19,6 @@ args <- p$parse_args(commandArgs(TRUE))
 #####################
 ## Define settings ##
 #####################
-
-source(here::here("settings.R"))
 
 ## START TEST ##
 # args <- list()

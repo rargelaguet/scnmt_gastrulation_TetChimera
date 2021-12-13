@@ -31,7 +31,7 @@ plates:
 directories:
     base: /Users/argelagr/data/tet_chimera_nmtseq
     original_data: /Users/argelagr/data/tet_chimera_nmtseq/original
-    processed_data: /Users/argelagr/data/tet_chimera_nmtseq/processed/rna_new
+    processed_data: /Users/argelagr/data/tet_chimera_nmtseq/processed/rna
     results: /Users/argelagr/data/tet_chimera_nmtseq/results
     atlas: /Users/argelagr/data/gastrulation10x
 
@@ -41,9 +41,10 @@ directories:
 
 resources:
     marker_genes: /Users/argelagr/data/gastrulation10x/results/marker_genes/all_stages/marker_genes.txt.gz
-    umap: "/Users/argelagr/data/tet_chimera_nmtseq/results/rna/dimensionality_reduction/seurat/umap_features1000_pcs30_neigh25_dist0.3.txt.gz"
+    umap: /Users/argelagr/data/tet_chimera_nmtseq/results/rna/dimensionality_reduction/seurat/umap_features1000_pcs30_neigh25_dist0.3.txt.gz
     celltypes: ["Epiblast", "Primitive_Streak", "Caudal_epiblast", "PGC", "Anterior_Primitive_Streak", "Notochord", "Def._endoderm", "Gut", "Nascent_mesoderm", "Mixed_mesoderm", "Intermediate_mesoderm", "Caudal_Mesoderm", "Paraxial_mesoderm", "Somitic_mesoderm", "Pharyngeal_mesoderm", "Cardiomyocytes", "Allantois", "ExE_mesoderm", "Mesenchyme", "Haematoendothelial_progenitors", "Endothelium", "Blood_progenitors_1", "Blood_progenitors_2", "Erythroid1", "Erythroid2", "Erythroid3", "NMP", "Rostral_neurectoderm", "Caudal_neurectoderm", "Neural_crest", "Forebrain_Midbrain_Hindbrain", "Spinal_cord", "Surface_ectoderm", "Visceral_endoderm", "ExE_endoderm", "ExE_ectoderm", "Parietal_endoderm"]
     stages: ["E7.5","E8.5"]
+    gene_metadata: /Users/argelagr/data/tet_chimera_nmtseq/features/gene_metadata/Mmusculus_genes_BioMart.87.txt
 
 #############
 ## Scripts ##
@@ -69,56 +70,57 @@ scripts:
 ## Parameters ##
 ################
 
-pseudobulk_rna:
-    group_by: ["celltype.mapped_mnn", "celltype.mapped_seurat"]
-    normalisation_method: "cpm"
-    
-mapping_mnn:
-    atlas_stages: ["E6.5","E6.75","E7.0","E7.25","E7.5","E7.75","E8.0","E8.25","E8.5"]
-    npcs: 50
-    n_neighbours: 25
+params:
+    pseudobulk_rna:
+        group_by: ["celltype.mapped_mnn", "celltype.mapped_seurat"]
+        normalisation_method: "cpm"
+        
+    mapping_mnn:
+        atlas_stages: ["E6.5","E6.75","E7.0","E7.25","E7.5","E7.75","E8.0","E8.25","E8.5"]
+        npcs: 50
+        n_neighbours: 25
 
-mapping_seurat:
-    atlas_stages: ["E6.5","E6.75","E7.0","E7.25","E7.5","E7.75","E8.0","E8.25","E8.5"]
-    npcs: 50
-    n_neighbours: 25
+    mapping_seurat:
+        atlas_stages: ["E6.5","E6.75","E7.0","E7.25","E7.5","E7.75","E8.0","E8.25","E8.5"]
+        npcs: 50
+        n_neighbours: 25
 
-qc:
-    min_nFeature_RNA: 4000
-    max_nFeature_RNA: 10000
-    percent_mt: 10
-    percent_rib: 20
-    
-dimensionality_reduction_sce:
-    npcs: 30
-    features: 1000
-    n_neighbors: 25
-    min_dist: 0.3
-    vars_to_regress: ["nFeature_RNA","mit_percent_RNA"]
-    colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
+    qc:
+        min_nFeature_RNA: 4000
+        max_nFeature_RNA: 10000
+        percent_mt: 10
+        percent_rib: 20
+        
+    dimensionality_reduction_sce:
+        npcs: 30
+        features: 1000
+        n_neighbors: 25
+        min_dist: 0.3
+        vars_to_regress: ["nFeature_RNA","mit_percent_RNA"]
+        colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
 
-dimensionality_reduction_seurat:
-    npcs: 30
-    features: 1000
-    n_neighbors: 25
-    min_dist: 0.3
-    seed: 42
-    vars_to_regress: ["nFeature_RNA","mit_percent_RNA"]
-    colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
+    dimensionality_reduction_seurat:
+        npcs: 30
+        features: 1000
+        n_neighbors: 25
+        min_dist: 0.3
+        seed: 42
+        vars_to_regress: ["nFeature_RNA","mit_percent_RNA"]
+        colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
 
-# celltype_validation_single_cells:
-#     umap: "..."
-#     celltype_label: "celltype.mapped_seurat"
+    # celltype_validation_single_cells:
+    #     umap: "..."
+    #     celltype_label: "celltype.mapped_seurat"
 
-# celltype_validation_pseudobulk:
-#     umap: "..."
-#     celltype_label: "celltype.mapped_seurat"
+    # celltype_validation_pseudobulk:
+    #     umap: "..."
+    #     celltype_label: "celltype.mapped_seurat"
 
-plot_celltype_proportions:
-    celltype_label: "celltype.mapped_mnn"
-    # celltype_label: ["celltype.mapped_seurat","celltype.mapped_mnn"]
+    plot_celltype_proportions:
+        celltype_label: "celltype.mapped_mnn"
+        # celltype_label: ["celltype.mapped_seurat","celltype.mapped_mnn"]
 
-# plot_mapping_results
+    # plot_mapping_results
 
 ###########
 ## Slurm ##

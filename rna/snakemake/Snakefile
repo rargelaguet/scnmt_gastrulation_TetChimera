@@ -26,16 +26,17 @@ else:
 
 rule all:
     input: 
+        config["directories"]["processed_data"]+"/seurat.rds",
         config["directories"]["results"]+"/rna/qc/sample_metadata_after_qc.txt.gz",
-        config["directories"]["processed_data"]+"/SingleCellExperiment.rds",
+        config["directories"]["processed_data"]+"/SingleCellExperiment.rds"
         # expand("%s/rna/mapping/mapping_mnn_all_samples.txt.gz" % config["directories"]["results"]),
         # expand("%s/rna/mapping/mapping_seurat_all_samples.txt.gz" % config["directories"]["results"]),
-        expand("%s/rna/mapping/mapping_mnn_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
-        expand("%s/rna/mapping/mapping_seurat_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
-        expand("%s/rna/mapping/mapping_seurat_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
-        config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping.txt.gz",
+        # expand("%s/rna/mapping/mapping_mnn_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
+        # expand("%s/rna/mapping/mapping_seurat_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
+        # expand("%s/rna/mapping/mapping_seurat_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
+        # config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping.txt.gz",
         # config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping_all_samples.txt.gz",
-        expand("%s/rna/mapping/pdf/umap_mapped_allcells.pdf" % config["directories"]["results"])
+        # expand("%s/rna/mapping/pdf/umap_mapped_allcells.pdf" % config["directories"]["results"])
         # expand("%s/rna/celltype_proportions/celltype_proportions_{sample}_horizontal_barplots.pdf" % config["directories"]["results"], stage=config["plates"]),
 
         # expand("%s/rna/pseudobulk/SingleCellExperiment_pseudobulk_{group_by}.rds" % config["directories"]["results"], 
@@ -47,26 +48,27 @@ rule all:
 ## Load count matrices and create Seurat object ##
 ##################################################
 
-# rule create_seurat:
-#     input:
-#         script=config["scripts"]["create_seurat"],
-#         counts=config["directories"]["processed_data"]+"/counts_GRCm38_100.tsv.gz",
-#         metadata=config["directories"]["processed_data"]+"/sample_metadata_sce.txt.gz",
-#     output:
-#         seurat=config["directories"]["processed_data"]+"/seurat.rds",
-#         metadata=config["directories"]["processed_data"]+"/metadata.txt.gz"
-#     params:
-#         outdir=config["directories"]["processed_data"]
-#     conda:
-#         "environment.yaml"
-#     log: 
-#         "logs/create_seurat.log"
-#     threads: 
-#         config["slurm"]["create_seurat"]["threads"]
-#     resources:
-#         mem_mb = config["slurm"]["create_seurat"]["memory"]
-#     shell:
-#         "Rscript {input.script} --counts {input.counts} --metadata {input.metadata} --outdir {params.outdir} > {log}"
+rule create_seurat:
+    input:
+        script = config["scripts"]["create_seurat"],
+        counts = config["directories"]["processed_data"]+"/counts.tsv.gz",
+        metadata = config["directories"]["base"]+"/processed/sample_metadata.txt.gz",
+        gene_metadata = config["resources"]["gene_metadata"]
+    output:
+        seurat=config["directories"]["processed_data"]+"/seurat.rds",
+        metadata=config["directories"]["processed_data"]+"/metadata.txt.gz"
+    params:
+        outdir=config["directories"]["processed_data"]
+    conda:
+        "environment.yaml"
+    log: 
+        "logs/create_seurat.log"
+    threads: 
+        config["slurm"]["create_seurat"]["threads"]
+    resources:
+        mem_mb = config["slurm"]["create_seurat"]["memory"]
+    shell:
+        "Rscript {input.script} --counts {input.counts} --metadata {input.metadata} --gene_metadata {input.gene_metadata} --outdir {params.outdir} > {log}"
 
 #####################
 ## Quality control ##
@@ -80,10 +82,10 @@ rule qc:
     output:
         config["directories"]["results"]+"/rna/qc/sample_metadata_after_qc.txt.gz"
     params:
-        min_nFeature_RNA = config["qc"]["min_nFeature_RNA"],
-        max_nFeature_RNA = config["qc"]["max_nFeature_RNA"],
-        percent_mt = config["qc"]["percent_mt"],
-        percent_rib = config["qc"]["percent_rib"],
+        min_nFeature_RNA = config["params"]["qc"]["min_nFeature_RNA"],
+        max_nFeature_RNA = config["params"]["qc"]["max_nFeature_RNA"],
+        percent_mt = config["params"]["qc"]["percent_mt"],
+        percent_rib = config["params"]["qc"]["percent_rib"],
         outdir=config["directories"]["results"]+"/rna/qc"
     conda:
         "environment.yaml"
@@ -138,9 +140,9 @@ rule mapping_mnn:
     output:
         config["directories"]["results"]+"/rna/mapping/mapping_mnn_{plate}.txt.gz"
     params:
-        atlas_stages=config["mapping_mnn"]["atlas_stages"],
-        npcs = config["mapping_mnn"]["npcs"],
-        n_neighbours = config["mapping_mnn"]["n_neighbours"]
+        atlas_stages=config["params"]["mapping_mnn"]["atlas_stages"],
+        npcs = config["params"]["mapping_mnn"]["npcs"],
+        n_neighbours = config["params"]["mapping_mnn"]["n_neighbours"]
     conda:
         "environment.yaml"
     log: 
@@ -167,9 +169,9 @@ rule mapping_mnn_all_samples:
         config["directories"]["results"]+"/rna/mapping/mapping_mnn_all_samples.txt.gz"
     params:
         plates = expand("{plate}", plate=config["plates"]),
-        atlas_stages=config["mapping_mnn"]["atlas_stages"],
-        npcs = config["mapping_mnn"]["npcs"],
-        n_neighbours = config["mapping_mnn"]["n_neighbours"]
+        atlas_stages=config["params"]["mapping_mnn"]["atlas_stages"],
+        npcs = config["params"]["mapping_mnn"]["npcs"],
+        n_neighbours = config["params"]["mapping_mnn"]["n_neighbours"]
     conda:
         "environment.yaml"
     log: 
@@ -194,9 +196,9 @@ rule mapping_seurat:
     output:
         config["directories"]["results"]+"/rna/mapping/mapping_seurat_{plate}.txt.gz"
     params:
-        atlas_stages=config["mapping_seurat"]["atlas_stages"],
-        npcs = config["mapping_seurat"]["npcs"],
-        n_neighbours = config["mapping_seurat"]["n_neighbours"]
+        atlas_stages=config["params"]["mapping_seurat"]["atlas_stages"],
+        npcs = config["params"]["mapping_seurat"]["npcs"],
+        n_neighbours = config["params"]["mapping_seurat"]["n_neighbours"]
     conda:
         "environment.yaml"
     log: 
@@ -221,9 +223,9 @@ rule mapping_seurat_all_samples:
         config["directories"]["results"]+"/rna/mapping/mapping_seurat_all_samples.txt.gz"
     params:
         plates = expand("{plate}", plate=config["plates"]),
-        atlas_stages=config["mapping_seurat"]["atlas_stages"],
-        npcs = config["mapping_seurat"]["npcs"],
-        n_neighbours = config["mapping_seurat"]["n_neighbours"]
+        atlas_stages=config["params"]["mapping_seurat"]["atlas_stages"],
+        npcs = config["params"]["mapping_seurat"]["npcs"],
+        n_neighbours = config["params"]["mapping_seurat"]["n_neighbours"]
     conda:
         "environment.yaml"
     log: 
@@ -294,10 +296,10 @@ rule dimensionality_reduction_sce:
         config["directories"]["results"]+"/rna/dimensionality_reduction/sce/pca_features{dimred_sce_features}_pcs{dimred_sce_npcs}.txt.gz"
     params:
         outdir = config["directories"]["results"]+"/rna/dimensionality_reduction/sce",
-        n_neighbors = config["dimensionality_reduction_sce"]["n_neighbors"],
-        min_dist = config["dimensionality_reduction_sce"]["min_dist"],
-        vars_to_regress = config["dimensionality_reduction_sce"]["vars_to_regress"],
-        colour_by = config["dimensionality_reduction_sce"]["colour_by"]
+        n_neighbors = config["params"]["dimensionality_reduction_sce"]["n_neighbors"],
+        min_dist = config["params"]["dimensionality_reduction_sce"]["min_dist"],
+        vars_to_regress = config["params"]["dimensionality_reduction_sce"]["vars_to_regress"],
+        colour_by = config["params"]["dimensionality_reduction_sce"]["colour_by"]
     conda:
         "environment.yaml"
     log: 
@@ -324,11 +326,11 @@ rule dimensionality_reduction_seurat:
         config["directories"]["results"]+"/rna/dimensionality_reduction/seurat/pca_features{dimred_seurat_features}_pcs{dimred_seurat_npcs}.txt.gz"
     params:
         outdir = config["directories"]["results"]+"/rna/dimensionality_reduction/seurat",
-        colour_by = config["dimensionality_reduction_seurat"]["colour_by"],
-        n_neighbors = config["dimensionality_reduction_seurat"]["n_neighbors"],
-        min_dist = config["dimensionality_reduction_seurat"]["min_dist"],
-        vars_to_regress = config["dimensionality_reduction_seurat"]["vars_to_regress"],
-        seed = config["dimensionality_reduction_seurat"]["seed"]
+        colour_by = config["params"]["dimensionality_reduction_seurat"]["colour_by"],
+        n_neighbors = config["params"]["dimensionality_reduction_seurat"]["n_neighbors"],
+        min_dist = config["params"]["dimensionality_reduction_seurat"]["min_dist"],
+        vars_to_regress = config["params"]["dimensionality_reduction_seurat"]["vars_to_regress"],
+        seed = config["params"]["dimensionality_reduction_seurat"]["seed"]
     conda:
         "environment.yaml"
     log: 
@@ -358,7 +360,7 @@ rule pseudobulk_rna:
         seurat = config["directories"]["results"]+"/rna/pseudobulk/Seurat_pseudobulk_{group_by}.rds",
         sce = config["directories"]["results"]+"/rna/pseudobulk/SingleCellExperiment_pseudobulk_{group_by}.rds"
     params:
-        normalisation_method = config["pseudobulk_rna"]["normalisation_method"],
+        normalisation_method = config["params"]["pseudobulk_rna"]["normalisation_method"],
         outdir = config["directories"]["results"]+"/rna/pseudobulk"
         # group_by=config["pseudobulk"]["group_by"]
     conda:
@@ -470,7 +472,7 @@ rule plot_mapping_results:
 #         expand(config["directories"]["results"]+"/rna/celltype_proportions/celltype_proportions_{sample}_horizontal_barplots.pdf", stage=config["samples"])
 #     params:
 #         plates = expand("{plate}", plate=config["plates"]),
-#         celltype_label = config["plot_celltype_proportions"]["celltype_label"],
+#         celltype_label = config["params"]["plot_celltype_proportions"]["celltype_label"],
 #         outdir = config["directories"]["results"]+"/rna/celltype_proportions"
 #     conda:
 #         "environment.yaml"
