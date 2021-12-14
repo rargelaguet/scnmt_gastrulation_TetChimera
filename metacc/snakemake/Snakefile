@@ -13,7 +13,7 @@ if search("BI2404M", host) and getpass.getuser()=="argelagr":
     configfile: "config_ricard_local.yaml"
 elif search("[headstone|pebble]", host) and getpass.getuser()=="argelagr":
     configfile: "config_ricard_babraham.yaml"
-elif search("[headstone|pebble]", host) and getpass.getuser()=="stephen":
+elif search("[headstone|pebble]", host) and getpass.getuser()=="clarks":
     configfile: "config_stephen_babraham.yaml"
 else:
     print("Computer not recognised")
