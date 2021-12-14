@@ -66,7 +66,7 @@ opts$threshold_fdr <- 0.10
 print("Loading cell metadata...")
 
 sample_metadata <- fread(io$metadata) %>%
-  .[,celltype_class:=sprintf("%s_%s",celltype.mapped_mnn,class)] %>% # temporary
+  .[,celltype_class:=sprintf("%s_%s",celltype.mapped,class)] %>% # temporary
   .[pass_metQC==TRUE]
 
 stopifnot(args$group_label%in%colnames(sample_metadata))

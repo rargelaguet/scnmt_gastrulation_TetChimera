@@ -49,7 +49,7 @@ opts$min_marker_score <- 0.75
 ###################
 
 sample_metadata <- fread(args$metadata) %>% 
-  .[!is.na(celltype.mapped_mnn) & (pass_metQC==TRUE | pass_accQC==TRUE)]
+  .[!is.na(celltype.mapped) & (pass_metQC==TRUE | pass_accQC==TRUE)]
 
 opts$met_cells <- sample_metadata[pass_metQC==TRUE,id_met]
 opts$acc_cells <- sample_metadata[pass_accQC==TRUE,id_acc]
@@ -104,7 +104,7 @@ global_rates.dt <- sample_metadata[,c("cell","met_rate","acc_rate")] %>%
 #   .[,.(Nmet=sum(Nmet), Ntotal=sum(Ntotal)), by=c("cell","anno","context")] %>% 
 #   .[Ntotal>=opts$min_observations] %>%
 #   .[,rate:=100*(Nmet/Ntotal)] %>%
-#   merge(sample_metadata[,c("cell","sample","celltype.mapped_mnn")], by="cell") %>%
+#   merge(sample_metadata[,c("cell","sample","celltype.mapped")], by="cell") %>%
 #   merge(global_rates.dt, by=c("cell","context")) %>%
 #   .[,rate_norm:=rate/global_rate]
 
@@ -114,13 +114,13 @@ global_rates.dt <- sample_metadata[,c("cell","met_rate","acc_rate")] %>%
 
 celltypes.to.plot <- unique(marker_peaks.dt$celltype)# %>% head(n=3)
 
-celltypes.to.subset <- sample_metadata[,.N,by=c("celltype.mapped_mnn","class")] %>% .[N>=opts$min_cells] %>% .[,.N,by="celltype.mapped_mnn"] %>% .[N>1] %>% .$celltype.mapped_mnn
+celltypes.to.subset <- sample_metadata[,.N,by=c("celltype.mapped","class")] %>% .[N>=opts$min_cells] %>% .[,.N,by="celltype.mapped"] %>% .[N>1] %>% .$celltype.mapped
 
 for (i in celltypes.to.plot) {
   
   # sum(scnmt.peaks %in% marker_peaks.dt[celltype==i & score>=opts$min_marker_score,idx])
   
-  tmp <- sample_metadata[celltype.mapped_mnn%in%celltypes.to.subset,c("cell","class","sample","celltype.mapped_mnn")]
+  tmp <- sample_metadata[celltype.mapped%in%celltypes.to.subset,c("cell","class","sample","celltype.mapped")]
   
   to.plot <- metacc.dt %>%
     .[id%in%marker_peaks.dt[celltype==i & score>=opts$min_marker_score,idx]]  %>%
@@ -132,7 +132,7 @@ for (i in celltypes.to.plot) {
   p.met <- ggplot(to.plot[context=="CG"], aes(x = class, y = rate, fill=class)) +
     geom_boxplot(outlier.shape=NA, coef=1) +
     geom_point(position = position_jitterdodge(jitter.width = 0.5), size = 1.25, alpha = 0.75, shape=21) +
-    facet_wrap(~celltype.mapped_mnn) +
+    facet_wrap(~celltype.mapped) +
     labs(x="", y="Methylation levels (%)") +
     geom_hline(yintercept=mean(global_rates.dt[cell%in%tmp$cell & context=="CG",global_rate]), linetype="dashed") +
     # scale_fill_manual(values=opts$context.colors) +
@@ -150,7 +150,7 @@ for (i in celltypes.to.plot) {
   p.acc <- ggplot(to.plot[context=="GC"], aes(x = class, y = rate, fill=class)) +
     geom_boxplot(outlier.shape=NA, coef=1) +
     geom_point(position = position_jitterdodge(jitter.width = 0.5), size = 1.25, alpha = 0.75, shape=21) +
-    facet_wrap(~celltype.mapped_mnn) +
+    facet_wrap(~celltype.mapped) +
     geom_hline(yintercept=mean(global_rates.dt[cell%in%tmp$cell & context=="GC",global_rate]), linetype="dashed") +
     labs(x="", y="Chr. accessibility levels (%)") +
     # scale_fill_manual(values=opts$context.colors) +
@@ -182,14 +182,14 @@ for (i in celltypes.to.plot) {
     .[,.(Nmet=sum(Nmet), Ntotal=sum(Ntotal)), by=c("cell","anno","context")] %>% 
     .[Ntotal>=opts$min_observations] %>%
     .[,rate:=100*(Nmet/Ntotal)] %>%
-    merge(sample_metadata[celltype.mapped_mnn%in%celltypes.to.subset,c("cell","class","sample","celltype.mapped_mnn")], by="cell") %>%
+    merge(sample_metadata[celltype.mapped%in%celltypes.to.subset,c("cell","class","sample","celltype.mapped")], by="cell") %>%
     merge(global_rates.dt, by=c("cell","context")) %>%
     .[,rate_norm:=rate/global_rate]
   
   p.met <- ggplot(to.plot[context=="CG"], aes(x = class, y = rate_norm, fill=class)) +
     geom_boxplot(outlier.shape=NA, coef=1) +
     geom_point(position = position_jitterdodge(jitter.width = 0.5), size = 1.25, alpha = 0.75, shape=21) +
-    facet_wrap(~celltype.mapped_mnn) +
+    facet_wrap(~celltype.mapped) +
     geom_hline(yintercept=1, linetype="dashed") +
     labs(x="", y="Methylation levels (%)") +
     # scale_fill_manual(values=opts$context.colors) +
@@ -207,7 +207,7 @@ for (i in celltypes.to.plot) {
   p.acc <- ggplot(to.plot[context=="GC"], aes(x = class, y = rate_norm, fill=class)) +
     geom_boxplot(outlier.shape=NA, coef=1) +
     geom_point(position = position_jitterdodge(jitter.width = 0.5), size = 1.25, alpha = 0.75, shape=21) +
-    facet_wrap(~celltype.mapped_mnn) +
+    facet_wrap(~celltype.mapped) +
     labs(x="", y="Chr. accessibility levels (%)") +
     geom_hline(yintercept=1, linetype="dashed") +
     # scale_fill_manual(values=opts$context.colors) +

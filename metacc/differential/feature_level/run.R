@@ -24,7 +24,7 @@ opts$annos <- c("multiome_peaks")
 ########################
 
 sample_metadata <- fread(io$metadata) %>%
-  .[,celltype_class:=sprintf("%s_%s",celltype.mapped_mnn,class)] %>% # temporary
+  .[,celltype_class:=sprintf("%s_%s",celltype.mapped,class)] %>% # temporary
   .[pass_metQC==TRUE]
 
 stopifnot(opts$group_label%in%colnames(sample_metadata))
@@ -41,7 +41,7 @@ sample_metadata <- sample_metadata %>%
 ## Run ##
 #########
 
-opts$celltypes <- unique(sample_metadata$celltype.mapped_mnn)
+opts$celltypes <- unique(sample_metadata$celltype.mapped)
 
 io$outdir <- c(
   "CG" = file.path(io$basedir,sprintf("results/met/differential/%s",opts$group_label)),
@@ -50,7 +50,7 @@ io$outdir <- c(
 
 # i <- "Blood_progenitors_2"; anno <- "prom_2000_2000"; context <- "CG"
 for (i in opts$celltypes) {
-  tmp <- sample_metadata[celltype.mapped_mnn==i,.N,by="group"]
+  tmp <- sample_metadata[celltype.mapped==i,.N,by="group"]
   print(i); print(tmp)
   if (all(tmp$N>=opts$min_cells) & nrow(tmp)>1) {
     groupA <- tmp$group[[1]]; groupB <- tmp$group[[2]]

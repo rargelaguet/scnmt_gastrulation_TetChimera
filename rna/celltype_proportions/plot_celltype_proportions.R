@@ -22,7 +22,7 @@ source(here::here("utils.R"))
 ## START TEST ##
 # args$metadata <- file.path(io$basedir,"results/rna/mapping/sample_metadata_after_mapping.txt.gz")
 # args$samples <- opts$samples
-# args$celltype_label <- "celltype.mapped_mnn"
+# args$celltype_label <- "celltype.mapped"
 # args$outdir <- file.path(io$basedir,"results/rna/celltype_proportions")
 ## END TEST ##
 

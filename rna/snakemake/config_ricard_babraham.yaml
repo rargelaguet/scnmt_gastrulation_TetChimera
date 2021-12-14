@@ -31,7 +31,7 @@ plates:
 directories:
     base: /bi/group/reik/ricard/data/tet_chimera_nmtseq
     original_data: /bi/group/reik/ricard/data/tet_chimera_nmtseq/original
-    processed_data: /bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/rna_new
+    processed_data: /bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/rna
     results: /bi/group/reik/ricard/data/tet_chimera_nmtseq/results
     atlas: /bi/group/reik/ricard/data/pijuansala2019_gastrulation10x
 
@@ -41,7 +41,7 @@ directories:
 
 resources:
     marker_genes: /bi/group/reik/ricard/data/pijuansala2019_gastrulation10x/results/marker_genes/all_stages/marker_genes.txt.gz
-    umap: "/bi/group/reik/ricard/data/tet_chimera_nmtseq/results_new/rna/dimensionality_reduction/umap_features1000_pcs30_neigh25_dist0.3.txt.gz"
+    umap: "/bi/group/reik/ricard/data/tet_chimera_nmtseq/results/rna/dimensionality_reduction/umap_features1000_pcs30_neigh25_dist0.3.txt.gz"
     celltypes: ["Epiblast", "Primitive_Streak", "Caudal_epiblast", "PGC", "Anterior_Primitive_Streak", "Notochord", "Def._endoderm", "Gut", "Nascent_mesoderm", "Mixed_mesoderm", "Intermediate_mesoderm", "Caudal_Mesoderm", "Paraxial_mesoderm", "Somitic_mesoderm", "Pharyngeal_mesoderm", "Cardiomyocytes", "Allantois", "ExE_mesoderm", "Mesenchyme", "Haematoendothelial_progenitors", "Endothelium", "Blood_progenitors_1", "Blood_progenitors_2", "Erythroid1", "Erythroid2", "Erythroid3", "NMP", "Rostral_neurectoderm", "Caudal_neurectoderm", "Neural_crest", "Forebrain_Midbrain_Hindbrain", "Spinal_cord", "Surface_ectoderm", "Visceral_endoderm", "ExE_endoderm", "ExE_ectoderm", "Parietal_endoderm"]
     stages: ["E7.5","E8.5"]
     gene_metadata: /bi/group/reik/ricard/data/tet_chimera_nmtseq/features/gene_metadata/Mmusculus_genes_BioMart.87.txt
@@ -72,7 +72,8 @@ scripts:
 
 params:
     pseudobulk_rna:
-        group_by: ["celltype.mapped_mnn", "celltype.mapped_seurat"]
+        # group_by: ["celltype.mapped_mnn", "celltype.mapped_seurat"]
+        group_by: ["celltype.mapped"]
         normalisation_method: "cpm"
         
     mapping_mnn:
@@ -97,7 +98,8 @@ params:
         n_neighbors: 25
         min_dist: 0.3
         vars_to_regress: ["nFeature_RNA","mit_percent_RNA"]
-        colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
+        # colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
+        colour_by: ["plate", "celltype.mapped"]
 
     dimensionality_reduction_seurat:
         npcs: 30
@@ -106,7 +108,8 @@ params:
         min_dist: 0.3
         seed: 42
         vars_to_regress: ["nFeature_RNA","mit_percent_RNA"]
-        colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
+        # colour_by: ["plate", "celltype.mapped_mnn", "celltype.mapped_seurat"]
+        colour_by: ["plate", "celltype.mapped"]
 
     # celltype_validation_single_cells:
     #     umap: "..."
@@ -140,13 +143,13 @@ slurm:  # memory in MB
         memory: 5000
         threads: 1
     mapping_mnn:
-        memory: 30000
+        memory: 50000
         threads: 1
     mapping_mnn_all_samples:
-        memory: 30000
+        memory: 60000
         threads: 1
     mapping_seurat:
-        memory: 90000
+        memory: 100000
         threads: 1
     mapping_seurat_all_samples:
         memory: 90000

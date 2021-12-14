@@ -53,7 +53,7 @@ dir.create(args$outdir, showWarnings = F)
 ###################
 
 sample_metadata <- fread(args$metadata) %>%
-  .[,celltype_class:=sprintf("%s_%s",celltype.mapped_mnn,class)]
+  .[,celltype_class:=sprintf("%s_%s",celltype.mapped,class)]
 
 if (args$context=="CG") {
   sample_metadata <- sample_metadata %>% .[pass_metQC==TRUE]

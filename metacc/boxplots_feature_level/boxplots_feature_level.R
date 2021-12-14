@@ -85,7 +85,7 @@ to.plot <- metacc.dt %>%
   .[,.(Nmet=sum(Nmet), Ntotal=sum(Ntotal)), by=c("cell","anno","context")] %>% 
   .[Ntotal>=opts$min_observations] %>%
   .[,rate:=100*(Nmet/Ntotal)] %>%
-  merge(sample_metadata[,c("cell","sample","celltype.mapped_mnn")], by="cell") %>%
+  merge(sample_metadata[,c("cell","sample","celltype.mapped")], by="cell") %>%
   merge(global_rates.dt, by=c("cell","context")) %>%
   .[,rate_norm:=rate/global_rate]
 

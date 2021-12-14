@@ -26,7 +26,7 @@ args <- p$parse_args(commandArgs(TRUE))
 # args$metadata <- file.path(io$basedir,"results/met/stats/sample_metadata_after_met_stats.txt.gz")
 # args$outdir <- file.path(io$basedir,"results/met/stats/pdf")
 # args$context <- "CG"
-# args$celltype_label <- "celltype.mapped_mnn"
+# args$celltype_label <- "celltype.mapped"
 ## END TEST ##
 
 # Sanity checks
@@ -47,12 +47,12 @@ stopifnot(args$celltype_label%in%colnames(sample_metadata))
 if (args$context=="CG") {
   to.plot <- sample_metadata %>%
     .[!is.na(id_met)] %>%
-    .[,c("cell","plate","sample","celltype.mapped_mnn","nCG","met_rate")] %>% 
+    .[,c("cell","plate","sample","celltype.mapped","nCG","met_rate")] %>% 
     setnames(c("nCG","met_rate"),c("N","rate"))
 } else if (args$context=="GC") {
   to.plot <- sample_metadata %>%
     .[!is.na(id_acc)] %>%
-    .[,c("cell","plate","sample","celltype.mapped_mnn","nGC","acc_rate")] %>% 
+    .[,c("cell","plate","sample","celltype.mapped","nGC","acc_rate")] %>% 
     setnames(c("nGC","acc_rate"),c("N","rate"))
 }
 

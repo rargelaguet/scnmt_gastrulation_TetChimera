@@ -53,11 +53,11 @@ stats.dt <- fread(args$stats) %>%
 # Merge with cell metadata
 if (args$context=="CG") {
   to.plot <- stats.dt %>%
-    merge(sample_metadata[pass_metQC==TRUE,c("cell","id_met","sample","stage","plate","celltype.mapped_mnn")],by="id_met") %>%
+    merge(sample_metadata[pass_metQC==TRUE,c("cell","id_met","sample","stage","plate","celltype.mapped")],by="id_met") %>%
     setnames(c("nCG","met_rate"),c("N","rate"))
 } else if (args$context=="GC") {
   to.plot <- stats.dt %>%
-    merge(sample_metadata[pass_accQC==TRUE,c("cell","id_acc","sample","stage","plate","celltype.mapped_mnn")],by="id_acc") %>%
+    merge(sample_metadata[pass_accQC==TRUE,c("cell","id_acc","sample","stage","plate","celltype.mapped")],by="id_acc") %>%
     setnames(c("nGC","acc_rate"),c("N","rate"))
 }
 

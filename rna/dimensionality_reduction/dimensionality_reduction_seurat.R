@@ -36,7 +36,7 @@ source(here::here("utils.R"))
 # args$stages <- "E8.75"
 # args$features <- 1000
 # args$npcs <- 30
-# args$colour_by <- c("celltype.mapped_mnn","celltype.mapped_seurat","sample")
+# args$colour_by <- c("celltype.mapped","sample")
 # args$vars_to_regress <- c("nFeature_RNA","mitochondrial_percent_RNA")
 # args$n_neighbors <- 25
 # args$min_dist <- 0.5
