@@ -1,7 +1,6 @@
 samples:
     - E7.5_TET_TKO
     - E7.5_TET_TKO_crispr
-    - E7.5_TET_TKO_crispr
     - E8.5_WT_CD41+
     - E8.5_TET_TKO_CD41+
     - E8.5_WT_KDR+
@@ -51,7 +50,7 @@ directories:
     features: /bi/group/reik/ricard/data/tet_chimera_nmtseq/features/genomic_contexts
     genome_seq: /bi/group/reik/ricard/data/mm10_sequence/mm10.genome
     bedGraphToBigWig: "/bi/apps/ucsc_tools/5/bedGraphToBigWig"
-    rna_SingleCellExperiment: /bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/rna_new/SingleCellExperiment.rds
+    rna_SingleCellExperiment: /bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/rna/SingleCellExperiment.rds
     tss_file: /bi/group/reik/ricard/data/mm10_regulation/genes/TSS_protein_coding.bed
 
 ###############

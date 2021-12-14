@@ -81,6 +81,8 @@ to.plot <- sample_metadata %>%
 ## Horizontal barplots ##
 #########################
 
+stopifnot(unique(to.plot$celltype)%in%names(opts$celltype.colors))
+
 # Rename "_" to " " in cell types
 # to.plot[,celltype:=stringr::str_replace_all(celltype,"_"," ")]
 # names(opts$celltype.colors) <- names(opts$celltype.colors) %>% stringr::str_replace_all("_"," ")

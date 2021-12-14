@@ -1,7 +1,6 @@
 samples:
     - E7.5_TET_TKO
     - E7.5_TET_TKO_crispr
-    - E7.5_TET_TKO_crispr
     - E8.5_WT_CD41+
     - E8.5_TET_TKO_CD41+
     - E8.5_WT_KDR+

@@ -25,11 +25,11 @@ args <- p$parse_args(commandArgs(TRUE))
 #####################
 
 ## START TEST ##
-# args$metadata <- file.path(io$basedir,"results_new/rna/mapping/sample_metadata_after_mapping.txt.gz")
-# args$sce <- file.path(io$basedir,"processed_new/rna/SingleCellExperiment.rds")
-# args$group_by <- "celltype.mapped_mnn"
+# args$metadata <- file.path(io$basedir,"results/rna/mapping/sample_metadata_after_mapping.txt.gz")
+# args$sce <- file.path(io$basedir,"processed/rna/SingleCellExperiment.rds")
+# args$group_by <- "celltype.mapped"
 # args$normalisation_method <- "cpm"
-# args$outdir <- file.path(io$basedir,"results_new/rna/pseudobulk")
+# args$outdir <- file.path(io$basedir,"results/rna/pseudobulk")
 ## END TEST ##
 
 ###############
@@ -41,8 +41,8 @@ sample_metadata <- fread(args$metadata) %>%
   .[pass_rnaQC==TRUE & !is.na(eval(as.name(args$group_by)))]
 
 # Load SingleCellExperiment
-sce <- load_SingleCellExperiment(args$sce, cells=sample_metadata$cell)
-colData(sce) <- sample_metadata %>% tibble::column_to_rownames("cell") %>% DataFrame
+sce <- load_SingleCellExperiment(args$sce, cells=sample_metadata$id_rna)
+colData(sce) <- sample_metadata %>% tibble::column_to_rownames("id_rna") %>% DataFrame
 
 ################
 ## Pseudobulk ##
@@ -80,14 +80,8 @@ if (args$normalisation_method=="deseq2") {
   stop("Normalisation method not recognised")
 }
 
-# test
-# plot(x=logcounts(sce_pseudobulk)[1:1000,1:10], foo[1:1000,1:10])
-# cor(colSums(logcounts(sce_pseudobulk)),sce_pseudobulk@metadata$n_cells)
-# plot(colSums(logcounts(sce_pseudobulk)),sce_pseudobulk@metadata$n_cells)
-
 # Save
 saveRDS(sce_pseudobulk, file.path(args$outdir,sprintf("SingleCellExperiment_pseudobulk_%s.rds",args$group_by)))
-
 
 ########################################################
 ## Create Seurat object from the SingleCellExperiment ##

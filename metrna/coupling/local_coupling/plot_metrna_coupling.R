@@ -1,5 +1,8 @@
 here::here("metrna/coupling/local_coupling/plot_metrna_coupling.R")
 
+source(here::here("settings.R"))
+source(here::here("utils.R"))
+
 ######################
 ## Define arguments ##
 ######################
@@ -16,14 +19,11 @@ args <- p$parse_args(commandArgs(TRUE))
 ## Load settings ##
 ###################
 
-source(here::here("settings.R"))
-source(here::here("utils.R"))
-
 ## START TEST ##
-args <- list()
-args$metadata <- io$metadata# file.path(io$basedir,"results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
-args$file  <- file.path(io$basedir,"results/metrna/coupling/precomputed_metrna_coupling.txt.gz")
-args$outdir  <- file.path(io$basedir,"results/metrna/coupling")
+# args <- list()
+# args$metadata <- io$metadata# file.path(io$basedir,"results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
+# args$file  <- file.path(io$basedir,"results/metrna/coupling/precomputed_metrna_coupling.txt.gz")
+# args$outdir  <- file.path(io$basedir,"results/metrna/coupling")
 ## END TEST ##
 
 # I/O

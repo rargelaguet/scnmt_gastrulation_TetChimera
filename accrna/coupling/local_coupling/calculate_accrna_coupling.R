@@ -1,5 +1,8 @@
 here::here("accrna/coupling/local_coupling/calculate_accrna_coupling.R")
 
+source(here::here("settings.R"))
+source(here::here("utils.R"))
+
 ######################
 ## Define arguments ##
 ######################
@@ -22,8 +25,6 @@ args <- p$parse_args(commandArgs(TRUE))
 ## Load settings ##
 ###################
 
-source(here::here("settings.R"))
-source(here::here("utils.R"))
 
 ## START TEST ##
 # args <- list()
