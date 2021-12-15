@@ -53,6 +53,7 @@ dir.create(args$outdir, showWarnings = F)
 ###################
 
 sample_metadata <- fread(args$metadata) %>%
+  .[!is.na(celltype.mapped)] %>%
   .[,celltype_class:=sprintf("%s_%s",celltype.mapped,class)]
 
 if (args$context=="CG") {

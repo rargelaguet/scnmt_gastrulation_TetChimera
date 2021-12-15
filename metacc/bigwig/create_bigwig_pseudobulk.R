@@ -15,7 +15,7 @@ source(here::here("utils.R"))
 p <- ArgumentParser(description='')
 p$add_argument('--indir',  type="character",              help='Input directory')
 p$add_argument('--outdir',  type="character",              help='Output directory')
-p$add_argument('--bedGraphToBigWig_binary',  type="character",              help='Output directory')
+p$add_argument('--bedGraphToBigWig',  type="character",              help='bedGraphToBigWig binary')
 p$add_argument('--genome_seq',  type="character",              help='Genome sequence file')
 p$add_argument('--samples',  type="character", nargs="+",  help='Samples')
 # p$add_argument('--window_size',  type="integer",              help='Window size')
@@ -33,15 +33,15 @@ args <- p$parse_args(commandArgs(TRUE))
 
 ## START TEST ##
 # args <- list()
-# args$indir <- file.path(io$basedir,"processed/acc/gpc_level/pseudobulk/sample")
-# args$outdir <- file.path(io$basedir,"processed/acc/bigwig")
+# args$indir <- file.path(io$basedir,"processed/met/cpg_level/pseudobulk/celltype_class")
+# args$outdir <- file.path(io$basedir,"processed/met/bigwig/celltype_class")
 # args$bedGraphToBigWig_binary <- "/bi/apps/ucsc_tools/5/bedGraphToBigWig"
-# args$samples <- c("E8.5_TET_TKO")
-# args$genome_seq <- "/Users/argelagr/data/mm10_sequence/mm10.genome"
-# args$step_size <- 100
+# args$samples <- NULL
+# args$genome_seq <- "/bi/group/reik/ricard/data/mm10_sequence/mm10.genome" # "/Users/argelagr/data/mm10_sequence/mm10.genome"
+# args$step_size <- 500
 # args$min_rate_bigwig <- 10
 # args$smooth_rates <- TRUE
-# args$test <- TRUE
+# args$test <- FALSE
 ## END TEST ##
 
 # Sanity checks

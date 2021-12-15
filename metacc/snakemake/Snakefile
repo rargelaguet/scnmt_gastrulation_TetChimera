@@ -40,11 +40,11 @@ rule all:
         # expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
         # expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
         expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        # expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
         config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz",
         # config["directories"]["results"]+"/metacc/tss_profiles/pdf/CG_ratio_vs_GC_ratio_coloured_by_nCG.pdf",
         expand(config["directories"]["processed_data"]+"/met/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        # expand(config["directories"]["processed_data"]+"/acc/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"])
+        expand(config["directories"]["processed_data"]+"/acc/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
         config["directories"]["results"]+"/metrna/coupling/precomputed_metrna_coupling.txt.gz",
         config["directories"]["results"]+"/metacc/coupling/precomputed_metacc_coupling.txt.gz",
         config["directories"]["results"]+"/accrna/coupling/precomputed_accrna_coupling.txt.gz"
@@ -276,8 +276,8 @@ rule boxplots_metacc_feature_level:
         acc_file = config["directories"]["processed_data"]+"/acc/feature_level/{genomic_context}.tsv.gz",
         metadata = rules.parse_metadata_after_qc.output
     output:
-        config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_{genomic_context}.pdf",
-        config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_relative_{genomic_context}.pdf"
+        config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_{genomic_context}.pdf"
+        # config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_{genomic_context}_relative.pdf"
     params:
         outdir = config["directories"]["results"]+"/metacc/boxplots_feature_level"
     log: 
@@ -391,6 +391,9 @@ rule pseudobulk_acc:
 ## Bigwig ##
 ############
 
+# babraham cluster: this needs to load the following package module:
+# module load ucsc_tools/5
+
 rule generate_bigwig_files_met:
     input:
         # rules.pseudobulk_met.output,
@@ -416,6 +419,9 @@ rule generate_bigwig_files_met:
         --genome_seq {params.genome_seq} --step_size {params.step_size} --min_rate_bigwig {params.min_rate_bigwig} \
         --outdir {params.outdir} --smooth_rates > {log}"
 
+# babraham cluster: this needs to load the following package module:
+# module load ucsc_tools/5
+
 rule generate_bigwig_files_acc:
     input:
         rules.pseudobulk_acc.output,
@@ -439,7 +445,7 @@ rule generate_bigwig_files_acc:
     shell:
         "Rscript {input.script} --indir {input.indir} --bedGraphToBigWig {params.bedGraphToBigWig} \
         --genome_seq {params.genome_seq} --step_size {params.step_size} --min_rate_bigwig {params.min_rate_bigwig} \
-        --outdir {params.outdir} --smooth_rates --test > {log}"
+        --outdir {params.outdir} --smooth_rates > {log}"
 
 
 ##############
@@ -492,6 +498,24 @@ rule calculate_metrna_coupling:
         "Rscript {input.script} --sce {input.sce} --metadata {input.metadata} --tss {input.tss_file} \
         --up {params.up} --down {params.down} --window {params.window} --tile {params.tile} \
         --outfile {output} > {log}"
+
+# rule plot_metrna_coupling:
+#     input:
+#         script = config["scripts"]["plot_metrna_coupling"],
+#         file = rules.calculate_metrna_coupling.output,
+#         metadata = rules.parse_metadata_after_qc.output,
+#     output:
+#         config["directories"]["results"]+"/metrna/coupling/metrna_coupling_per_sample.pdf"
+#     params:
+#         outdir = config["directories"]["results"]+"/metrna/coupling"
+#     log: 
+#         "logs/plot_metrna_coupling.log"
+#     threads: 
+#         config["slurm"]["plot_metrna_coupling"]["threads"]
+#     resources:
+#         mem_mb = config["slurm"]["plot_metrna_coupling"]["memory"]
+#     shell:
+#         "Rscript {input.script} --metadata {input.metadata} --file {input.file} --outdir {params.outdir} > {log}"
 
 rule calculate_accrna_coupling:
     input:
