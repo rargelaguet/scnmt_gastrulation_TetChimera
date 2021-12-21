@@ -15,13 +15,26 @@ plates:
     - E7.5_tet_crispr_plate5
     - E7.5_tet_crispr_plate6
     - E8.5_oct20_plate1
-    - E8.5_oct20_plate7
-    - E8.5_oct20_plate5
+    - E8.5_oct20_plate2
     - E8.5_oct20_plate3
     - E8.5_oct20_plate4
+    - E8.5_oct20_plate5
     - E8.5_oct20_plate6
-    - E8.5_oct20_plate2
+    - E8.5_oct20_plate7
     - E8.5_oct20_plate8
+    - Tet-tko-chimera_embryo01
+    - Tet-tko-chimera_embryo02
+    - Tet-tko-chimera_embryo04
+    - Tet-tko-chimera_embryo05
+    - tet_chimera_march20_plate1
+    - tet_chimera_march20_plate2
+    - tet_chimera_march20_plate3
+    - tet_chimera_march20_plate4_tet_tko
+    - tet_chimera_march20_plate4_wt
+    - tet_chimera_march20_plate5_tet_tko
+    - tet_chimera_march20_plate5_wt
+    - tet_chimera_march20_plate6_tet_tko
+    - tet_chimera_march20_plate6_wt
     
 #################
 ## Directories ##
@@ -30,8 +43,8 @@ plates:
 directories:
     base: /bi/group/reik/ricard/data/tet_chimera_nmtseq
     original_data: /bi/group/reik/ricard/data/tet_chimera_nmtseq/original
-    processed_data: /bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/rna
-    results: /bi/group/reik/ricard/data/tet_chimera_nmtseq/results
+    processed_data: /bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/rna_new
+    results: /bi/group/reik/ricard/data/tet_chimera_nmtseq/results_new
     atlas: /bi/group/reik/ricard/data/pijuansala2019_gastrulation10x
 
 ###############
@@ -45,6 +58,7 @@ resources:
     stages: ["E7.5","E8.5"]
     gene_metadata: /bi/group/reik/ricard/data/tet_chimera_nmtseq/features/gene_metadata/Mmusculus_genes_BioMart.87.txt
     bedGraphToBigWig: "/bi/apps/ucsc_tools/5/bedGraphToBigWig"
+
 #############
 ## Scripts ##
 #############

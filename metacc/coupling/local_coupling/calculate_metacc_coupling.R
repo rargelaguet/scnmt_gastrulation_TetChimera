@@ -83,8 +83,8 @@ metacc_coupling.dt <- sample_metadata$cell %>% map(function(i) {
   
   # Define chromatin accessibility data.table
   acc_dt <- fread(sprintf("%s/%s.tsv.gz",io$acc_data_raw,sample_metadata[cell==i,id_acc]), showProgress = F, header = T,
-                  select = c("chr"="factor", "start"="integer", "rate"="integer")) %>%
-    .[,c("bp","end"):=list(start,start)] %>%
+                  select = c("chr"="factor", "pos"="integer", "rate"="integer")) %>%
+    setnames("pos","bp") %>% .[,c("start","end"):=list(bp,bp)] %>%
     setkey("chr","start","end") %>%
     
     # Overlap with TSS annotations
@@ -101,8 +101,8 @@ metacc_coupling.dt <- sample_metadata$cell %>% map(function(i) {
   
   # Define DNA methylation data.table
   met_dt <- fread(sprintf("%s/%s.tsv.gz",io$met_data_raw,sample_metadata[cell==i,id_met]), showProgress = F, header = T,
-        select = c("chr"="factor", "start"="integer", "rate"="integer")) %>%
-    .[,c("bp","end"):=list(start,start)] %>%
+        select = c("chr"="factor", "pos"="integer", "rate"="integer")) %>%
+    setnames("pos","bp") %>% .[,c("start","end"):=list(bp,bp)] %>%
     setkey("chr","start","end") %>%
     
     # Overlap with TSS annotations

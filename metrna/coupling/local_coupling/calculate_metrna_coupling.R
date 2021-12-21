@@ -114,8 +114,8 @@ metrna_coupling.dt <- cells.to.plot %>% map(function(i) {
 
   # Define DNA methylation data
   met_dt <- fread(sprintf("%s/%s.tsv.gz",io$met_data_raw,sample_metadata[cell==i,id_met]), showProgress = F, header = T,
-        select = c("chr"="factor", "start"="integer", "rate"="integer")) %>%
-    .[,c("bp","end"):=list(start,start)] %>%
+        select = c("chr"="factor", "pos"="integer", "rate"="integer")) %>%
+    setnames("pos","bp") %>% .[,c("start","end"):=list(bp,bp)] %>%
     setkey("chr","start","end") %>%
     
     # Overlap with TSS annotations

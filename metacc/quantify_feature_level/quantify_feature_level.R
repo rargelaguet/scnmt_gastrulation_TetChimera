@@ -92,9 +92,8 @@ for (i in 1:length(samples_keep)) {
     # Read and parse raw methylation data
     dat_sample <- fread(sprintf("%s/%s.tsv.gz",args$indir,samples_keep[i]), sep="\t", verbose=F, showProgress=F) %>%
       # .[,c("chr","pos","rate")] %>%
-      # .[,c("start","end") := list(pos,pos)] %>% # Add 'start' and 'end' columns to do the overlap
-      # .[,c("chr","pos"):=list(as.factor(chr),NULL)] %>% 
-      .[,chr:=factor(chr,levels=opts$chr)] %>%
+      .[,c("start","end") := list(pos,pos)] %>% # Add 'start' and 'end' columns to do the overlap
+      .[,pos:=NULL] %>% .[,chr:=factor(chr,levels=opts$chr)] %>%
       setkey(chr,start,end)
     
     # Sanity check

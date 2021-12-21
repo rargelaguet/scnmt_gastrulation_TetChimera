@@ -1,3 +1,4 @@
+foo <- fread("/Users/argelagr/data/tet_chimera_nmtseq/sample_metadata.txt.gz")
 foo <- fread("/Users/argelagr/data/tet_chimera_nmtseq/backup/sample_metadata.txt")
 
 

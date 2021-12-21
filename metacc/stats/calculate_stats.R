@@ -64,8 +64,9 @@ for (i in opts$cells) {
   if (file.exists(sprintf("%s/%s.tsv.gz",args$indir,i))) {
     print(i)
 
-    data <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), sep="\t", verbose=F, showProgress=F, select=c(1,2,4)) %>%
-      setnames(c("chr","pos","rate"))
+    # data <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), sep="\t", verbose=F, showProgress=F, select=c(1,2,4)) %>%
+    #   setnames(c("chr","pos","rate"))
+    data <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), sep="\t", verbose=F, showProgress=F)
 
     # Compute genome-wide statistics
     stats[cell==i, c("N","rate"):=list(nrow(data), round(100*mean(data$rate),2))]

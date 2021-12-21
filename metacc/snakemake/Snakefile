@@ -33,21 +33,21 @@ rule all:
         config["directories"]["results"]+"/acc/qc/sample_metadata_after_acc_qc.txt.gz",
         config["directories"]["results"]+"/metacc/qc/sample_metadata_after_metacc_qc.txt.gz",
         config["directories"]["results"]+"/met/stats/met_stats_per_chr.txt.gz",
-        config["directories"]["results"]+"/acc/stats/acc_stats_per_chr.txt.gz",
-        expand(config["directories"]["processed_data"]+"/met/feature_level/{genomic_context}.tsv.gz", genomic_context=config["genomic_contexts"]),
-        expand(config["directories"]["processed_data"]+"/acc/feature_level/{genomic_context}.tsv.gz", genomic_context=config["genomic_contexts"]),
-        expand(config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_{genomic_context}.pdf", genomic_context=config["genomic_contexts"]),
-        # expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        # expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz",
-        # config["directories"]["results"]+"/metacc/tss_profiles/pdf/CG_ratio_vs_GC_ratio_coloured_by_nCG.pdf",
-        expand(config["directories"]["processed_data"]+"/met/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        expand(config["directories"]["processed_data"]+"/acc/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        config["directories"]["results"]+"/metrna/coupling/precomputed_metrna_coupling.txt.gz",
-        config["directories"]["results"]+"/metacc/coupling/precomputed_metacc_coupling.txt.gz",
-        config["directories"]["results"]+"/accrna/coupling/precomputed_accrna_coupling.txt.gz"
+        config["directories"]["results"]+"/acc/stats/acc_stats_per_chr.txt.gz"
+        # expand(config["directories"]["processed_data"]+"/met/feature_level/{genomic_context}.tsv.gz", genomic_context=config["genomic_contexts"]),
+        # expand(config["directories"]["processed_data"]+"/acc/feature_level/{genomic_context}.tsv.gz", genomic_context=config["genomic_contexts"]),
+        # expand(config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_{genomic_context}.pdf", genomic_context=config["genomic_contexts"]),
+        # # expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        # # expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        # expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        # expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        # config["directories"]["results"]+"/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz",
+        # # config["directories"]["results"]+"/metacc/tss_profiles/pdf/CG_ratio_vs_GC_ratio_coloured_by_nCG.pdf",
+        # expand(config["directories"]["processed_data"]+"/met/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        # expand(config["directories"]["processed_data"]+"/acc/bigwig/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        # config["directories"]["results"]+"/metrna/coupling/precomputed_metrna_coupling.txt.gz",
+        # config["directories"]["results"]+"/metacc/coupling/precomputed_metacc_coupling.txt.gz",
+        # config["directories"]["results"]+"/accrna/coupling/precomputed_accrna_coupling.txt.gz"
     
 
 #################################

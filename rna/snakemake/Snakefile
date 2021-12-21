@@ -31,8 +31,8 @@ rule all:
         config["directories"]["processed_data"]+"/SingleCellExperiment.rds",
         expand("%s/rna/mapping/mapping_mnn_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
         expand("%s/rna/mapping/mapping_mnn_all_samples.txt.gz" % config["directories"]["results"]),
-        # expand("%s/rna/mapping/mapping_seurat_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
-        # expand("%s/rna/mapping/mapping_seurat_all_samples.txt.gz" % config["directories"]["results"]),
+        # # expand("%s/rna/mapping/mapping_seurat_{plate}.txt.gz" % config["directories"]["results"], plate=config["plates"]),
+        # # expand("%s/rna/mapping/mapping_seurat_all_samples.txt.gz" % config["directories"]["results"]),
         config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping.txt.gz",
         config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping_all_samples.txt.gz",
         expand("%s/rna/mapping/pdf/umap_mapped_allcells.pdf" % config["directories"]["results"]),
@@ -47,8 +47,8 @@ rule all:
 rule create_seurat:
     input:
         script = config["scripts"]["create_seurat"],
-        counts = config["directories"]["processed_data"]+"/counts.tsv.gz",
-        metadata = config["directories"]["base"]+"/processed/sample_metadata.txt.gz",
+        counts = config["directories"]["processed_data"]+"/counts.txt.gz",
+        metadata = config["directories"]["base"]+"/processed/sample_metadata_merged.txt.gz",
         gene_metadata = config["resources"]["gene_metadata"]
     output:
         seurat=config["directories"]["processed_data"]+"/seurat.rds",
@@ -72,8 +72,8 @@ rule create_seurat:
 
 rule qc:
     input:
-    	# metadata=rules.create_seurat.output.metadata,
-        metadata=config["directories"]["processed_data"]+"/metadata.txt.gz",
+    	metadata=rules.create_seurat.output.metadata,
+        # metadata=config["directories"]["processed_data"]+"/metadata.txt.gz",
         script=config["scripts"]["qc"]
     output:
         config["directories"]["results"]+"/rna/qc/sample_metadata_after_qc.txt.gz"

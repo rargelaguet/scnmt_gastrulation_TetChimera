@@ -167,23 +167,30 @@ opts$celltype.colors = c(
 )
 
 opts$plates <- c(
-	# "tet_chimera_march20_plate1",
-	# "tet_chimera_march20_plate2",
-	# "tet_chimera_march20_plate3",
-	# "tet_chimera_march20_plate4",
-	# "tet_chimera_march20_plate5",
-	# "tet_chimera_march20_plate6"
-	"E7.5_tet_chimera_plate3",
-	"E7.5_tet_crispr_plate5",
-	"E7.5_tet_crispr_plate6",
-	"E8.5_oct20_plate1",
-	"E8.5_oct20_plate7",
-	"E8.5_oct20_plate5",
-	"E8.5_oct20_plate3",
-	"E8.5_oct20_plate4",
-	"E8.5_oct20_plate6",
-	"E8.5_oct20_plate2",
-	"E8.5_oct20_plate8"
+  "E7.5_tet_chimera_plate3",
+  "E7.5_tet_crispr_plate5",
+  "E7.5_tet_crispr_plate6",
+  "E8.5_oct20_plate1",
+  "E8.5_oct20_plate2",
+  "E8.5_oct20_plate3",
+  "E8.5_oct20_plate4",
+  "E8.5_oct20_plate5",
+  "E8.5_oct20_plate6",
+  "E8.5_oct20_plate7",
+  "E8.5_oct20_plate8",
+  "Tet-tko-chimera_embryo01",
+  "Tet-tko-chimera_embryo02",
+  "Tet-tko-chimera_embryo04",
+  "Tet-tko-chimera_embryo05",
+  "tet_chimera_march20_plate1",
+  "tet_chimera_march20_plate2",
+  "tet_chimera_march20_plate3",
+  "tet_chimera_march20_plate4_tet_tko",
+  "tet_chimera_march20_plate4_wt",
+  "tet_chimera_march20_plate5_tet_tko",
+  "tet_chimera_march20_plate5_wt",
+  "tet_chimera_march20_plate6_tet_tko",
+  "tet_chimera_march20_plate6_wt"
 )
 
 opts$samples <- c(

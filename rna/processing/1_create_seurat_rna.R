@@ -21,10 +21,10 @@ args <- p$parse_args(commandArgs(TRUE))
 
 ## START TEST ##
 # args <- list()
-# args$counts <- file.path(io$basedir,"processed/rna/counts.tsv.gz")
-# args$metadata <- file.path(io$basedir,"processed/sample_metadata.txt.gz")
+# args$counts <- file.path(io$basedir,"processed/rna_new/counts.txt.gz")
+# args$metadata <- file.path(io$basedir,"processed/sample_metadata_merged.txt.gz")
 # args$gene_metadata <- io$gene_metadata
-# args$outdir <- file.path(io$basedir,"processed/rna")
+# args$outdir <- file.path(io$basedir,"processed/rna_new")
 ## END TEST ##
 
 #######################
@@ -37,7 +37,7 @@ rna_counts.mtx <- fread(args$count) %>% matrix.please
 ## Load sample metadata ##
 ##########################
 
-metadata <- fread(args$metadata, select=c(1,3,4,5,6,7,8,9,10,11,12,13,14))
+metadata <- fread(args$metadata)
 
 ########################
 ## Load gene metadata ##
@@ -59,41 +59,7 @@ rownames(rna_counts.mtx) <- tmp[rownames(rna_counts.mtx)]
 # Sanity checks
 stopifnot(!is.na(rownames(rna_counts.mtx)))
 stopifnot(!duplicated(rownames(rna_counts.mtx)))
-
-###########################
-## Parse sample metadata ##
-###########################
-
-# Parse column names
-# colnames(metadata) <- make.names(colnames(metadata))
-
-# create sample column
-plate2sample <- c(
-  "E7.5_tet_chimera_plate3" = "E7.5_TET_TKO",
-  "E7.5_tet_crispr_plate5" = "E7.5_TET_TKO_crispr",
-  "E7.5_tet_crispr_plate6" = "E7.5_TET_TKO_crispr",
-  "E8.5_oct20_plate1" = "E8.5_WT_CD41+",
-  "E8.5_oct20_plate2" = "E8.5_TET_TKO_CD41+",
-  "E8.5_oct20_plate3" = "E8.5_WT_KDR+",
-  "E8.5_oct20_plate4" = "E8.5_TET_TKO_KDR+",
-  "E8.5_oct20_plate5" = "E8.5_WT_KDR+_CD41+",
-  "E8.5_oct20_plate6" = "E8.5_TET_TKO_KDR+_CD41+",
-  "E8.5_oct20_plate7" = "E8.5_WT",
-  "E8.5_oct20_plate8" = "E8.5_TET_TKO"
-)
-metadata[,sample:=stringr::str_replace_all(plate,plate2sample)]
-table(metadata$sample)
-
-# Remove id_acc for samples that were processed with MT-seq
-metadata[method=="mt",id_acc:=NA]
-
-# Remove unused columns
-metadata[,c("tdTOM","KDR-Cy7","CD41-BV421"):=NULL]
-
-# Sanity checks
 stopifnot(sort(colnames(rna_counts.mtx))==sort(metadata$id_rna))
-# all(metadata[!is.na(id_acc),id_acc]%in%gsub(".tsv.gz","",list.files(io$acc_data_raw, pattern = "*.tsv.gz")))
-# all(metadata[!is.na(id_met),id_met]%in%gsub(".tsv.gz","",list.files(io$met_data_raw, pattern = "*.tsv.gz")))
 
 ##################
 ## Filter genes ##
@@ -113,6 +79,13 @@ rna_counts.mtx <- rna_counts.mtx[!duplicated(rownames(rna_counts.mtx)),]
 # Sanity checks
 stopifnot(sum(duplicated(rownames(rna_counts.mtx)))==0)
 stopifnot(sum(duplicated(colnames(rna_counts.mtx)))==0)
+
+###########################
+## Parse sample metadata ##
+###########################
+
+# Remove unused columns
+metadata[,c("tdTOM","KDR-Cy7","CD41-BV421"):=NULL]
 
 ##########################
 ## Create Seurat object ##

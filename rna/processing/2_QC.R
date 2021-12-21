@@ -22,7 +22,7 @@ args <- p$parse_args(commandArgs(TRUE))
 
 ## START TEST ##
 # args <- list()
-# args$metadata <- file.path(io$basedir,"processed/rna_new/metadata_sce.txt.gz")
+# args$metadata <- file.path(io$basedir,"processed/rna_new/metadata.txt.gz")
 # # args$metadata <- io$metadata
 # args$min_nFeature_RNA <- 4000
 # args$max_nFeature_RNA <- 10000
@@ -60,18 +60,18 @@ facet.labels <- c("nFeature_RNA" = "Num. of genes", "mit_percent_RNA" = "Mitocho
     
 ## Box plot 
 
-p <- ggplot(to.plot, aes_string(x="plate", y="value", fill="stage")) +
-    geom_boxplot(outlier.shape=NA, coef=1) +
+p <- ggplot(to.plot, aes_string(x="plate", y="value")) +
+    geom_boxplot(fill="gray70", outlier.shape=NA, coef=1) +
     facet_wrap(~variable, scales="free_y", nrow=1, labeller = as_labeller(facet.labels)) +
     # scale_fill_manual(values=opts$stage.colors) +
     theme_classic() +
     theme(
         axis.text.y = element_text(colour="black",size=rel(1)),
-        axis.text.x = element_text(colour="black",size=rel(0.65), angle=20, hjust=1, vjust=1),
+        axis.text.x = element_text(colour="black",size=rel(0.65), angle=90, hjust=1, vjust=0.5),
         axis.title.x = element_blank()
     )
 
-pdf(file.path(args$outdir,"qc_metrics_boxplot.pdf"), width=9, height=5)
+pdf(file.path(args$outdir,"qc_metrics_boxplot.pdf"), width=9, height=6)
 # pdf(sprintf("%s/qc_metrics_boxplot.pdf",args$outdir))
 print(p)
 dev.off()
@@ -110,17 +110,17 @@ dev.off()
 to.plot <- metadata %>%
     .[,mean(pass_rnaQC,na.rm=T),by=c("plate","stage")]
 
-p <- ggbarplot(to.plot, x="plate", y="V1", fill="stage") +
+p <- ggbarplot(to.plot, x="plate", y="V1", fill="gray70") +
     # scale_fill_manual(values=opts$stage.colors) +
     labs(x="", y="Fraction of cells that pass QC (RNA)") +
     # facet_wrap(~stage)
     theme(
         legend.position = "none",
         axis.text.y = element_text(colour="black",size=rel(0.8)),
-        axis.text.x = element_text(colour="black",size=rel(0.65), angle=20, hjust=1, vjust=1),
+        axis.text.x = element_text(colour="black",size=rel(0.65), angle=90, hjust=1, vjust=0.5),
     )
 
-pdf(file.path(args$outdir,"qc_metrics_barplot.pdf"), width=6, height=5)
+pdf(file.path(args$outdir,"qc_metrics_barplot.pdf"), width=6, height=6)
 print(p)
 dev.off()
 
