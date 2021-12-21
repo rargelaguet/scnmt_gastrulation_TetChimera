@@ -1,52 +1,48 @@
-#########
-## I/O ##
-#########
+here::i_am("rna/differential/differential.R")
 
-if (grepl("ricard",Sys.info()['nodename'])) {
-  source("/Users/ricard/10x_gastrulation_TetChimera/settings.R")
-  io$script <- "/Users/ricard/10x_gastrulation_TetChimera/differential/differential.R"
-} else if(grepl("ebi",Sys.info()['nodename'])){
-  source("/homes/ricard/10x_gastrulation_TetChimera/settings.R")
-  io$script <- "/homes/ricard/10x_gastrulation_TetChimera/differential/differential.R"
-  io$tmpdir <- paste0(io$basedir,"/results/differential/tmp"); dir.create(io$tmpdir, showWarnings = F)
-} else {
-  stop("Computer not recognised")
-}
-io$outdir <- paste0(io$basedir,"/results/differential"); dir.create(io$outdir, showWarnings = F)
+source(here::here("settings.R"))
 
-#############
-## Options ##
-#############
+#####################
+## Define settings ##
+#####################
 
-# Statistical test
-opts$statistical.test <- "edgeR"
+io$script <- here::here("rna/differential/differential.R")
+io$outdir <- file.path(io$basedir,"results_new/rna/differential"); dir.create(io$outdir, showWarnings=F)
 
-# Testing mode
-opts$test_mode <- FALSE
+##########################
+## Load sample metadata ##
+##########################
 
-# Define groups
-opts$groupA <- c("E8.5_Host")
-opts$groupB <- c("E8.5_TET_TKO")
+sample_metadata <- fread(io$metadata) %>% 
+  .[pass_rnaQC==TRUE & !is.na(celltype.mapped) & ko_type!="crispr"] %>% 
+  .[,ko:=ifelse(grepl("KO",sample),"TET TKO","WT")]
 
-#########
-## Run ##
-#########
+# Only consider cell types with sufficient observations in both KO and WT cells
+celltypes.to.use <- sample_metadata[,.(N=.N),by=c("ko","celltype.mapped")] %>% .[N>=15] %>% .[,.N,by="celltype.mapped"] %>% .[N>1,celltype.mapped]
+sample_metadata <- sample_metadata[celltype.mapped%in%celltypes.to.use]
 
-# for (i in head(opts$celltypes,n=3)) {
-for (i in opts$celltypes) {
-    outfile <- sprintf("%s/%s_%s_vs_%s.txt.gz", io$outdir,i,opts$groupA,opts$groupB)
+print(table(sample_metadata$celltype.mapped,sample_metadata$ko))
+
+###################################
+## Run all pair-wise comparisons ##
+###################################
+
+for (i in celltypes.to.use) {
+  outfile <- sprintf("%s/%s_WT_vs_KO.txt.gz", io$outdir,i)
+  
+  if (!file.exists(outfile)) {
     
     # Define LSF command
-    if (grepl("ricard",Sys.info()['nodename'])) {
+    if (grepl("BI",Sys.info()['nodename'])) {
       lsf <- ""
-    } else if (grepl("ebi",Sys.info()['nodename'])) {
-      lsf <- sprintf("bsub -M 15000 -n 1 -o %s/%s_%s_vs_%s.txt", io$tmpdir,i,opts$groupA,opts$groupB)
+    } else if (grepl("pebble|headstone", Sys.info()['nodename'])) {
+      lsf <- sprintf("sbatch -n 1 --mem 8G --wrap")
     }
-    cmd <- sprintf("%s Rscript %s --groupA %s --groupB %s --celltype %s --test %s --outfile %s", lsf, io$script, opts$groupA, opts$groupB, i, opts$statistical.test, outfile)
-    if (isTRUE(opts$test_mode)) cmd <- paste0(cmd, " --test_mode")
+    cmd <- sprintf("%s 'Rscript %s --groupA WT --groupB KO --group_label ko --outfile %s'", lsf, io$script, outfile)
     
     # Run
     print(cmd)
     system(cmd)
+  }
 }
 

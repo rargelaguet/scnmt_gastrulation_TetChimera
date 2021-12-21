@@ -118,6 +118,9 @@ metadata_merged[,sample:=stringr::str_replace_all(plate,plate2sample)]
 table(metadata_merged$sample)
 stopifnot(!is.na(metadata_merged$sample))
 
+# TO-DO
+metadata_merged[method=="mt",id_acc:=NA]
+
 ##########
 ## Save ##
 ##########

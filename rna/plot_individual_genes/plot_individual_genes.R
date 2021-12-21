@@ -64,7 +64,7 @@ opts$samples <- c(
 ## Load sample metadata ##
 ##########################
 
-io$metadata <- file.path(io$basedir,"results_new/rna/mapping/sample_metadata_after_mapping.txt.gz")
+# io$metadata <- file.path(io$basedir,"results_new/rna/mapping/sample_metadata_after_mapping.txt.gz")
 
 sample_metadata <- fread(io$metadata) %>% 
   .[pass_rnaQC==TRUE & celltype.mapped%in%opts$celltypes & sample%in%opts$samples] %>%

@@ -20,12 +20,10 @@ p$add_argument('--outfile',   type="character",    help='Output file')
 args <- p$parse_args(commandArgs(TRUE))
 
 ## START TEST
-# args$groupA <- c("E7.5_chimera_KO","E8.5_chimera_KO","E7.5_crisprKO")
-# args$groupB <- c("E8.5_host_WT","E7.5_host_WT")
-args$groupA <- "KO"
-args$groupB <- "WT"
-args$group_label <- "group"
-args$celltypes <- c("Blood_progenitors")
+# args$groupA <- "KO"
+# args$groupB <- "WT"
+# args$group_label <- "ko"
+# args$celltypes <- c("Blood_progenitors")
 ## END TEST
 
 #####################
@@ -59,7 +57,7 @@ opts$min_detection_rate_per_group <- 0.40
 
 sample_metadata <- fread(io$metadata) %>%
   .[ko_type!="crispr"] %>%
-  .[,group:=ifelse(grepl("KO",class),"KO","WT")] %>%
+  .[,ko:=ifelse(grepl("KO",class),"KO","WT")] %>%
   .[pass_rnaQC==TRUE & celltype.mapped%in%args$celltypes]
 
 stopifnot(args$group_label%in%colnames(sample_metadata))
