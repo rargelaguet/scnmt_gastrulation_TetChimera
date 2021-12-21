@@ -20,7 +20,8 @@ for (i in files.samples) {
 	tmp <- fread(grep(i,files,value=T), select=c(1,2,4)) %>%
 		setnames(c("chr","pos","rate")) %>%
 		.[rate!=50] %>%
-		.[,rate:=round(rate/100)]
+		.[,rate:=round(rate/100)] %>%
+		.[,chr:=paste0("chr",chr)]
 
 	outfile <- file.path(outdir,sprintf("%s.tsv.gz",i))
 	stopifnot(sprintf("%s.tsv.gz",i)%in%list.files("/bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/met/cpg_level", full.names=F))
@@ -32,7 +33,7 @@ for (i in files.samples) {
 ## scNMT-seq met ##
 ##################
 
-indir <- "/bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/met/cpg_level"
+indir <- "/bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/met/cpg_level/old"
 outdir <- "/bi/group/reik/ricard/data/tet_chimera_nmtseq/processed/met/cpg_level/new"
 sample_metadata <- fread("/bi/group/reik/ricard/data/tet_chimera_nmtseq/results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
 

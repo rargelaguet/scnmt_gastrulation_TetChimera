@@ -66,7 +66,8 @@ for (i in opts$cells) {
 
     # data <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), sep="\t", verbose=F, showProgress=F, select=c(1,2,4)) %>%
     #   setnames(c("chr","pos","rate"))
-    data <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), sep="\t", verbose=F, showProgress=F)
+    data <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), sep="\t", verbose=F, showProgress=F) %>%
+      .[chr%in%opts$chr]
 
     # Compute genome-wide statistics
     stats[cell==i, c("N","rate"):=list(nrow(data), round(100*mean(data$rate),2))]

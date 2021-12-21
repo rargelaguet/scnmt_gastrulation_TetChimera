@@ -67,7 +67,8 @@ for (i in opts$cells) {
     # Load data
     # data <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), sep="\t", verbose=F, showProgress=F, select=c(1,2,4)) %>%
     #   setnames(c("chr","pos","rate"))
-    data <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), sep="\t", verbose=F, showProgress=F)
+    data <- fread(sprintf("%s/%s.tsv.gz",args$indir,i), sep="\t", verbose=F, showProgress=F) %>%
+      .[chr%in%opts$chr]
 
     # Sanity checks
     stopifnot(unique(data$chr)%in%opts$chr)

@@ -36,7 +36,7 @@ rule all:
         config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping.txt.gz",
         config["directories"]["results"]+"/rna/mapping/sample_metadata_after_mapping_all_samples.txt.gz",
         expand("%s/rna/mapping/pdf/umap_mapped_allcells.pdf" % config["directories"]["results"]),
-        expand("%s/rna/celltype_proportions/celltype_proportions_{sample}_horizontal_barplots.pdf" % config["directories"]["results"], sample=config["samples"]),
+        expand("%s/rna/celltype_proportions/per_sample/celltype_proportions_{sample}.pdf" % config["directories"]["results"], sample=config["samples"]),
         expand("%s/rna/pseudobulk/SingleCellExperiment_pseudobulk_{group_by}.rds" % config["directories"]["results"], group_by=config["params"]["pseudobulk_rna"]["group_by"]),
         expand("%s/rna/pseudobulk/Seurat_pseudobulk_{group_by}.rds" % config["directories"]["results"], group_by=config["params"]["pseudobulk_rna"]["group_by"])
         
@@ -461,7 +461,7 @@ rule plot_celltype_proportions:
         script = config["scripts"]["plot_celltype_proportions"],
         metadata=rules.parse_mapping_results.output
     output:
-        expand(config["directories"]["results"]+"/rna/celltype_proportions/celltype_proportions_{sample}_horizontal_barplots.pdf", sample=config["samples"])
+        expand(config["directories"]["results"]+"/rna/celltype_proportions/per_sample/celltype_proportions_{sample}.pdf", sample=config["samples"])
     params:
         samples = expand("{sample}", sample=config["samples"]),
         celltype_label = config["params"]["plot_celltype_proportions"]["celltype_label"],

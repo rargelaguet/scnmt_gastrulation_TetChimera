@@ -58,6 +58,7 @@ opts$min_detection_rate_per_group <- 0.40
 ########################
 
 sample_metadata <- fread(io$metadata) %>%
+  .[ko_type!="crispr"] %>%
   .[,group:=ifelse(grepl("KO",class),"KO","WT")] %>%
   .[pass_rnaQC==TRUE & celltype.mapped%in%args$celltypes]
 

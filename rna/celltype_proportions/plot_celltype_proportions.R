@@ -1,4 +1,5 @@
 here::i_am("rna/celltype_proportions/plot_celltype_proportions.R")
+
 source(here::here("settings.R"))
 source(here::here("utils.R"))
 
@@ -155,9 +156,3 @@ for (i in samples.to.plot) {
   print(p)
   dev.off()
 }
-
-######################
-## Completion token ##
-######################
-
-file.create(file.path(args$outdir,"completed.txt"))
