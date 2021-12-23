@@ -22,11 +22,11 @@ args <- p$parse_args(commandArgs(TRUE))
 #####################
 
 ## START TEST ##
-# args <- list()
-# args$metadata <- file.path(io$basedir,"results/met/stats/sample_metadata_after_met_stats.txt.gz")
-# args$outdir <- file.path(io$basedir,"results/met/stats/pdf")
-# args$context <- "CG"
-# args$celltype_label <- "celltype.mapped"
+args <- list()
+args$metadata <- file.path(io$basedir,"results_new/met/stats/sample_metadata_after_met_stats.txt.gz")
+args$outdir <- file.path(io$basedir,"results_new/met/stats/pdf")
+args$context <- "CG"
+args$celltype_label <- "celltype.mapped"
 ## END TEST ##
 
 # Sanity checks
@@ -89,6 +89,31 @@ pdf(file.path(args$outdir,sprintf("%s_rate_per_sample.pdf",args$context)), width
 print(p)
 dev.off()
 
+
+######################################
+## Boxplots with rate per cell type ##
+######################################
+
+to.plot2 <- to.plot %>% 
+  .[,ko:=ifelse(grepl("KO",sample),"TET TKO","WT")] %>%
+  .[!is.na(celltype.mapped)] %>% .[,N:=.N,by="celltype.mapped"] %>% .[N>=5] %>% 
+  .[,celltype.mapped:=factor(celltype.mapped, levels=opts$celltypes[opts$celltypes%in%unique(celltype.mapped)])]
+
+p <- ggboxplot(to.plot2, x = "celltype.mapped", y = "rate", outlier.shape=NA, fill="celltype.mapped", alpha=0.5) +
+  geom_jitter(aes(fill=celltype.mapped), alpha=0.75, size=0.90, shape=21) +
+  facet_wrap(~ko, nrow=2, scales="fixed") + 
+  scale_fill_manual(values=opts$celltype.colors) +
+  labs(x="", y="Rate") +
+  guides(x = guide_axis(angle = 90)) +
+  theme(
+    legend.position = "none",
+    axis.text.y = element_text(size=rel(0.80)),
+    axis.text.x = element_text(size=rel(0.65))
+  )
+
+pdf(file.path(args$outdir,sprintf("%s_rate_per_sample.pdf",args$context)), width=9, height=4.5)
+print(p)
+dev.off()
 
 ############################################################
 ## Correlation between mean methylation rate and coverage ##

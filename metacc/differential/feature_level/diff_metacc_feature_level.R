@@ -1,4 +1,4 @@
-here::i_am("metacc/differential/feature_level/diffmet_feature_level.R")
+here::i_am("metacc/differential/feature_level/diff_metacc_feature_level.R")
 
 # Load default settings
 source(here::here("settings.R"))
@@ -13,32 +13,39 @@ p <- ArgumentParser(description='')
 p$add_argument('--anno',       type="character",  help='genomic context (i.e. genebody, promoters, etc.')
 p$add_argument('--groupA',     type="character",  nargs='+',  help='group A')
 p$add_argument('--groupB',     type="character",  nargs='+',  help='group B')
+p$add_argument('--celltype',    type="character",  help='Celltypes to use')
 p$add_argument('--group_label',    type="character",    help='Group label')
-p$add_argument('--context',     type="character",  nargs='+',  help='CG or GC')
+p$add_argument('--context',     type="character",  help='CG or GC')
 p$add_argument('--min_cells',  type="integer",                help='Minimum number of cells per group')
 p$add_argument('--outfile',    type="character",              help='Output file')
 args <- p$parse_args(commandArgs(TRUE))
+
 
 #####################
 ## Define settings ##
 #####################
 
 ## START TESTING ##
-# args$metadata <- file.path(io$basedir,"results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
-# args$anno <- "prom_200_200"
-# args$groupA <- c("Surface_ectoderm_E8.5_chimera_KO")
-# args$groupB <- c("Surface_ectoderm_E8.5_host_WT")
-# args$group_label <- "celltype_class"
-# args$context <- "CG"
-# args$min_cells <- 10
-# args$outfile <- file.path(io$basedir,sprintf("results/met/differential/%s/%s_%s_vs_%s.txt.gz",args$group_label,args$group_label,args$groupA,args$groupB))
+args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
+args$anno <- "prom_2000_2000"
+args$context <- "CG"
+args$groupA <- "KO"
+args$groupB <- "WT"
+args$group_label <- "ko"
+args$celltype <- "Blood_progenitors"
+args$min_cells <- 10
+args$outfile <- file.path(io$basedir,sprintf("results_new/met/differential/%s/%s_%s_vs_%s.txt.gz",args$group_label,args$celltype,args$groupA,args$groupB))
 ## END TESTING ##
+
+## START TEST
+## END TEST
 
 # Sanity checks
 stopifnot(args$context %in% c("CG","GC"))
+stopifnot(args$celltypes%in%opts$celltypes)
 
 # I/O
-dir.create(dirname(args$outfile))
+dir.create(dirname(args$outfile), showWarnings=F)
 
 ####################
 ## Define options ##
@@ -66,28 +73,23 @@ opts$threshold_fdr <- 0.10
 print("Loading cell metadata...")
 
 sample_metadata <- fread(io$metadata) %>%
-  .[,celltype_class:=sprintf("%s_%s",celltype.mapped,class)] %>% # temporary
-  .[pass_metQC==TRUE]
-
+  # .[,celltype_class:=sprintf("%s_%s",celltype.mapped,class)] %>% # temporary
+  .[pass_metQC==TRUE & celltype.mapped%in%args$celltype] %>%
+  .[,ko:=ifelse(grepl("KO",class),"KO","WT")]
 stopifnot(args$group_label%in%colnames(sample_metadata))
 
 sample_metadata <- sample_metadata %>%
   setnames(args$group_label,"group") %>%
-  # .[,group:=eval(as.name(args$group_label))] %>%
   .[group%in%c(args$groupA,args$groupB)] %>%
   .[,group:=factor(group,levels=opts$groups)] %>% setorder(group) # Sort cells so that groupA comes before groupB
 
-# test mode
-if (isTRUE(args$test_mode)) {
-  print("Testing mode activated")
-  sample_metadata <- sample_metadata %>% split(.,.$group) %>% map(~ head(.,n=250)) %>% rbindlist
-} else {
-  # Sanity checks
-  if (any(sample_metadata[,.N,by="group"]$N<args$min_cells)) {
-    stop("Not enough cells per group")
-  }
+# Sanity checks
+if (any(sample_metadata[,.N,by="group"]$N<args$min_cells)) {
+  stop("Not enough cells per group")
 }
 
+# print
+cat(args$celltype)
 table(sample_metadata$group)
 
 # Define cells to use
@@ -100,6 +102,7 @@ if (args$context=="CG") {
   io$indir <- io$acc_data_parsed
   sample_metadata <- sample_metadata[,c("id_acc","cell","group")]
 }
+
 ###########################
 ## Load feature metadata ##
 ###########################
@@ -117,33 +120,31 @@ feature_metadata <- fread(
 
 print("Loading data...")
 
-# Load methylation data
+# Load met/acc data
 data <- fread(file.path(io$indir,sprintf("%s.tsv.gz",args$anno)), 
   showProgress=F, header=F, select = c("V1"="factor", "V2"= "character", "V4"="integer", "V5"="integer", "V6"="integer")
-) %>% .[V1%in%cells & V5>=opts$min_obs] %>% 
-  setnames(c("id_met","id","Nmet","Ntotal","rate"))
+) %>% .[V1%in%cells & V5>=opts$min_obs]  %>%
+  setnames(c("cell","id","Nmet","Ntotal","rate"))
 
-# Load methylation data (option 2, cell by cell)
-# data <- sample_metadata$id_met %>% map(function(i) {
-#   fread(
-#     file = sprintf("%s/tmp/%s_%s.gz",io$met_data_parsed,i,args$anno), 
-#     showProgress = FALSE, header = FALSE,
-#     select = c("V1"="factor", "V2"= "character", "V4"="integer", "V5"="integer", "V6"="integer"))
-# }) %>% rbindlist %>% setnames(c("id_met","id","Nmet","Ntotal","rate"))
+# Merge data and sample metadata
+# if (args$context=="CG") {
+#   data <- data %>% 
+#     setnames(c("id_met","id","Nmet","Ntotal","rate")) %>% 
+#     merge(sample_metadata, by="id_met")
+# } else {
+#   data <- data %>% 
+#     setnames(c("id_acc","id","Nmet","Ntotal","rate")) %>% 
+#     merge(sample_metadata, by="id_acc")
+# }
 
-print(object.size(data), units='auto')
-
-# Merge methylation data and sample metadata
-data <- data %>% merge(sample_metadata, by="id_met")
-
-# Convert beta value to M value
+# Convert beta value to M value only if doing a t-test
 if (opts$statistical.test == "t.test") {
   data[,m:=log2(((rate/100)+0.01)/(1-(rate/100)+0.01))]
 }
 
-#############################
-## Filter methylation data ##
-#############################
+#################
+## Filter data ##
+#################
 
 print("Filtering data...")
 
@@ -158,9 +159,9 @@ data <- data[,Ngroup:=length(unique(group)), by="id"] %>% .[Ngroup==2] %>% .[,Ng
 #   data[,var := var(rate), by="id"] %>% setorder(-var) %>% head(n=opts$number_features) %>% .[,var:=NULL]
 # }
 
-#########################################
-## Differential methylation analysis ##
-#########################################
+###########################
+## Differential analysis ##
+###########################
 
 print("Doing differential testing...")
 

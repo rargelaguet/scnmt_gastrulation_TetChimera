@@ -38,7 +38,7 @@ for (i in celltypes.to.use) {
     } else if (grepl("pebble|headstone", Sys.info()['nodename'])) {
       lsf <- sprintf("sbatch -n 1 --mem 8G --wrap")
     }
-    cmd <- sprintf("%s 'Rscript %s --groupA WT --groupB KO --group_label ko --outfile %s'", lsf, io$script, outfile)
+    cmd <- sprintf("%s 'Rscript %s --celltype %s --groupA WT --groupB KO --group_label ko --outfile %s'", lsf, io$script, i, outfile)
     
     # Run
     print(cmd)

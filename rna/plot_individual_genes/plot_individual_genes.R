@@ -96,12 +96,15 @@ sce <- load_SingleCellExperiment(io$rna.sce, cells=sample_metadata$id_rna, norma
 ##########
 
 # genes.to.plot <- c("Eomes","Dppa4")
-genes.to.plot <- c("Lefty1","Cd34","Tmsb4x","Fgf3","Spata7","Cer1","Spink1","Dppa4","Dppa5a","Prc1","Lefty2","Ube2c","Hba-x","Hbb-y","Hba-a1","Hbb-bh1")
+genes.to.plot <- fread("/Users/argelagr/data/tet_chimera_nmtseq/results_new/rna/differential/marker_genes/differential_marker_genes.tsv.gz")$gene %>% unique
+# genes.to.plot <- c("Lefty1","Cd34","Tmsb4x","Fgf3","Spata7","Cer1","Spink1","Dppa4","Dppa5a","Prc1","Lefty2","Ube2c","Hba-x","Hbb-y","Hba-a1","Hbb-bh1")
 # genes.to.plot <- c("Vegfa","Vegfb","Vegfc","Vegfd","Kdr","Flt1","Tal1","Runx1","Etv2)
 # genes.to.plot <- c("Tet1","Tet2","Tet3","Dnmt1","Dnmt3a","Dnmt3b","Dnmt3l")
 # genes.to.plot <- rownames(sce)[grep("tomato",rownames(sce))]
 # genes.to.plot <- fread(io$atlas.marker_genes)$gene %>% unique %>% .[!grepl("Rik$",.)]
 # genes.to.plot <- fread("/Users/ricard/data/gastrulation10x/results/differential/celltypes/E8.5/Neural_crest_vs_Forebrain_Midbrain_Hindbrain.txt.gz") %>% .[sig==T & logFC<(-2),gene]
+
+stopifnot(genes.to.plot%in%rownames(sce))
 
 for (i in 1:length(genes.to.plot)) {
   
@@ -109,48 +112,65 @@ for (i in 1:length(genes.to.plot)) {
   
   if (gene %in% rownames(sce)) {
     print(sprintf("%s/%s: %s",i,length(genes.to.plot),gene))
-    outfile <- sprintf("%s/%s.pdf",io$outdir,gene)
     
-    if (!file.exists(outfile)) {
+    to.plot <- data.table(
+      id_rna = colnames(sce),
+      expr = logcounts(sce)[gene,]
+    ) %>% merge(sample_metadata[,c("id_rna","ko","celltype.mapped")], by="id_rna") %>%
+      .[,N:=.N,by=c("ko","celltype.mapped")] %>% .[N>=10]
+    
+    # Plot KO vs WT, facet by cell type
+    
+    p <- ggplot(to.plot, aes(x=ko, y=expr, fill=ko)) +
+      geom_violin(scale = "width", alpha=0.8) +
+      geom_boxplot(width=0.5, outlier.shape=NA, alpha=0.8) +
+      stat_summary(fun.data = give.n, geom = "text", size=3) +
+      # geom_jitter(size=2, shape=21, stroke=0.2, alpha=0.5) +
+      # scale_fill_manual(values=opts$colors) +
+      scale_fill_brewer(palette="Dark2") +
+      facet_wrap(~celltype.mapped, scales="fixed") +
+      theme_classic() +
+      labs(x="",y=sprintf("%s expression",gene)) +
+      # guides(x = guide_axis(angle = 90)) +
+      theme(
+        strip.text = element_text(size=rel(0.85)),
+        axis.text.x = element_text(colour="black",size=rel(1)),
+        axis.text.y = element_text(colour="black",size=rel(0.9)),
+        axis.ticks.x = element_blank(),
+        axis.title.y = element_text(colour="black",size=rel(1.0)),
+        legend.position = "top",
+        legend.title = element_blank(),
+        legend.text = element_text(size=rel(1.0))
+      )
+    
+      pdf(sprintf("%s/%s_per_class.pdf",io$outdir,gene), width=8, height=7)
+      print(p)
+      dev.off()
       
-      to.plot <- data.table(
-        id_rna = colnames(sce),
-        expr = logcounts(sce)[gene,]
-      ) %>% merge(sample_metadata[,c("id_rna","ko","celltype.mapped")], by="id_rna") %>%
-        .[,N:=.N,by=c("ko","celltype.mapped")] %>% .[N>=10]
+      # Plot per cell type, facet by WT vs KO 
       
-      p <- ggplot(to.plot, aes(x=ko, y=expr, fill=ko)) +
+      p <- ggplot(to.plot, aes(x=celltype.mapped, y=expr, fill=celltype.mapped)) +
         geom_violin(scale = "width", alpha=0.8) +
         geom_boxplot(width=0.5, outlier.shape=NA, alpha=0.8) +
         stat_summary(fun.data = give.n, geom = "text", size=3) +
-        # geom_jitter(size=2, shape=21, stroke=0.2, alpha=0.5) +
-        # scale_fill_manual(values=opts$colors) +
-        scale_fill_brewer(palette="Dark2") +
-        facet_wrap(~celltype.mapped, scales="fixed") +
+        scale_fill_manual(values=opts$celltype.colors) +
+        facet_wrap(~ko, nrow = 2, scales="fixed") +
         theme_classic() +
         labs(x="",y=sprintf("%s expression",gene)) +
-        # guides(x = guide_axis(angle = 90)) +
+        guides(x = guide_axis(angle = 90)) +
         theme(
           strip.text = element_text(size=rel(0.85)),
-          axis.text.x = element_text(colour="black",size=rel(1)),
+          axis.text.x = element_text(colour="black",size=rel(0.75)),
           axis.text.y = element_text(colour="black",size=rel(0.9)),
           axis.ticks.x = element_blank(),
           axis.title.y = element_text(colour="black",size=rel(1.0)),
-          legend.position = "top",
-          legend.title = element_blank(),
-          legend.text = element_text(size=rel(1.0))
+          legend.position = "none"
         )
       
-        pdf(outfile, width=8, height=7)
-        # png(outfile, width = 1100, height = 1000)
-        # jpeg(outfile, width = 700, height = 600)
-        print(p)
-        dev.off()
-        
-    } else {
-      print(sprintf("%s already exists...",outfile))
-    }
-
+      pdf(sprintf("%s/%s_per_celltype.pdf",io$outdir,gene), width=8, height=8)
+      print(p)
+      dev.off()
+      
   } else {
     print(sprintf("%s not found",gene))
   }

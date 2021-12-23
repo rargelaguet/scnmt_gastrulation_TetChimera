@@ -26,12 +26,12 @@ source(here::here("utils.R"))
 
 ## START TEST ##
 args <- list()
-args$metadata <- file.path(io$basedir,"results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
+args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
 args$anno <- "multiome_peaks"
 args$met_file <- file.path(io$basedir,sprintf("processed/met/feature_level/%s.tsv.gz",args$anno))
 args$acc_file <- file.path(io$basedir,sprintf("processed/acc/feature_level/%s.tsv.gz",args$anno))
 args$markers_file <- "/Users/argelagr/data/gastrulation_multiome_10x/results_new/atac/archR/differential/PeakMatrix/markers/marker_peaks_lenient.txt.gz"
-args$outdir  <- file.path(io$basedir,"results/metacc/boxplots_feature_level/markers")
+args$outdir  <- file.path(io$basedir,"results_new/metacc/boxplots_feature_level/markers")
 ## END TEST ##
 
 # I/O

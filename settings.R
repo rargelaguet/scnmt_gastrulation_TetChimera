@@ -66,7 +66,7 @@ io$acc.diff <- paste0(io$basedir,"/acc/results/differential/feature_level/lineag
 
 # Atlas information
 io$atlas.metadata <- paste0(io$atlas.basedir,"/sample_metadata.txt.gz")
-io$atlas.marker_genes <- paste0(io$atlas.basedir,"/results/marker_genes/marker_genes.txt.gz")
+io$atlas.marker_genes <- paste0(io$atlas.basedir,"/results/marker_genes/all_stages/marker_genes.txt.gz")
 io$atlas.differential <- paste0(io$atlas.basedir,"/results/differential")
 io$atlas.average_expression_per_celltype <- paste0(io$atlas.basedir,"/results/marker_genes/avg_expr_per_celltype_and_gene.txt.gz")
 io$atlas.sce <- paste0(io$atlas.basedir,"/processed/SingleCellExperiment.rds")
