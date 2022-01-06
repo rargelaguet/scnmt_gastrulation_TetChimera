@@ -95,8 +95,8 @@ sce <- load_SingleCellExperiment(io$rna.sce, cells=sample_metadata$id_rna, norma
 ## Plot ##
 ##########
 
-# genes.to.plot <- c("Eomes","Dppa4")
-genes.to.plot <- fread("/Users/argelagr/data/tet_chimera_nmtseq/results_new/rna/differential/marker_genes/differential_marker_genes.tsv.gz")$gene %>% unique
+genes.to.plot <- c("Erg")
+# genes.to.plot <- fread("/Users/argelagr/data/tet_chimera_nmtseq/results_new/rna/differential/marker_genes/differential_marker_genes.tsv.gz")$gene %>% unique
 # genes.to.plot <- c("Lefty1","Cd34","Tmsb4x","Fgf3","Spata7","Cer1","Spink1","Dppa4","Dppa5a","Prc1","Lefty2","Ube2c","Hba-x","Hbb-y","Hba-a1","Hbb-bh1")
 # genes.to.plot <- c("Vegfa","Vegfb","Vegfc","Vegfd","Kdr","Flt1","Tal1","Runx1","Etv2)
 # genes.to.plot <- c("Tet1","Tet2","Tet3","Dnmt1","Dnmt3a","Dnmt3b","Dnmt3l")

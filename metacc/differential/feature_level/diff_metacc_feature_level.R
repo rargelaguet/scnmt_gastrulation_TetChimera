@@ -26,15 +26,15 @@ args <- p$parse_args(commandArgs(TRUE))
 #####################
 
 ## START TESTING ##
-args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
-args$anno <- "prom_2000_2000"
-args$context <- "CG"
-args$groupA <- "KO"
-args$groupB <- "WT"
-args$group_label <- "ko"
-args$celltype <- "Blood_progenitors"
-args$min_cells <- 10
-args$outfile <- file.path(io$basedir,sprintf("results_new/met/differential/%s/%s_%s_vs_%s.txt.gz",args$group_label,args$celltype,args$groupA,args$groupB))
+# args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
+# args$anno <- "prom_2000_2000"
+# args$context <- "GC"
+# args$groupA <- "KO"
+# args$groupB <- "WT"
+# args$group_label <- "ko"
+# args$celltype <- "late_Erythroid"
+# args$min_cells <- 10
+# args$outfile <- file.path(io$basedir,sprintf("results_new/met/differential/%s/%s_%s_vs_%s.txt.gz",args$group_label,args$celltype,args$groupA,args$groupB))
 ## END TESTING ##
 
 ## START TEST
@@ -73,11 +73,21 @@ opts$threshold_fdr <- 0.10
 print("Loading cell metadata...")
 
 sample_metadata <- fread(io$metadata) %>%
-  # .[,celltype_class:=sprintf("%s_%s",celltype.mapped,class)] %>% # temporary
-  .[pass_metQC==TRUE & celltype.mapped%in%args$celltype] %>%
+  .[celltype.mapped==args$celltype] %>%
   .[,ko:=ifelse(grepl("KO",class),"KO","WT")]
-stopifnot(args$group_label%in%colnames(sample_metadata))
 
+# Define cells to use
+if (args$context=="CG") {
+  sample_metadata <- sample_metadata[pass_metQC==TRUE]
+  cells <- sample_metadata$id_met
+  io$indir <- io$met_data_parsed
+} else {
+  sample_metadata <- sample_metadata[pass_accQC==TRUE]
+  cells <- sample_metadata$id_acc
+  io$indir <- io$acc_data_parsed
+}
+
+stopifnot(args$group_label%in%colnames(sample_metadata))
 sample_metadata <- sample_metadata %>%
   setnames(args$group_label,"group") %>%
   .[group%in%c(args$groupA,args$groupB)] %>%
@@ -91,17 +101,6 @@ if (any(sample_metadata[,.N,by="group"]$N<args$min_cells)) {
 # print
 cat(args$celltype)
 table(sample_metadata$group)
-
-# Define cells to use
-if (args$context=="CG") {
-  cells <- sample_metadata$id_met
-  io$indir <- io$met_data_parsed
-  sample_metadata <- sample_metadata[,c("id_met","cell","group")]
-} else {
-  cells <- sample_metadata$id_acc
-  io$indir <- io$acc_data_parsed
-  sample_metadata <- sample_metadata[,c("id_acc","cell","group")]
-}
 
 ###########################
 ## Load feature metadata ##
@@ -123,24 +122,30 @@ print("Loading data...")
 # Load met/acc data
 data <- fread(file.path(io$indir,sprintf("%s.tsv.gz",args$anno)), 
   showProgress=F, header=F, select = c("V1"="factor", "V2"= "character", "V4"="integer", "V5"="integer", "V6"="integer")
-) %>% .[V1%in%cells & V5>=opts$min_obs]  %>%
-  setnames(c("cell","id","Nmet","Ntotal","rate"))
+) %>% .[V1%in%cells & V5>=opts$min_obs] 
 
 # Merge data and sample metadata
-# if (args$context=="CG") {
-#   data <- data %>% 
-#     setnames(c("id_met","id","Nmet","Ntotal","rate")) %>% 
-#     merge(sample_metadata, by="id_met")
-# } else {
-#   data <- data %>% 
-#     setnames(c("id_acc","id","Nmet","Ntotal","rate")) %>% 
-#     merge(sample_metadata, by="id_acc")
-# }
+if (args$context=="CG") {
+  stopifnot(unique(data$V1)%in%unique(sample_metadata$id_met))
+  stopifnot(unique(sample_metadata$id_met)%in%unique(data$V1))
+  data <- data %>%
+    setnames(c("id_met","id","Nmet","Ntotal","rate")) %>%
+    merge(sample_metadata[,c("id_met","cell","group")], by="id_met")
+} else {
+  stopifnot(unique(data$V1)%in%sample_metadata$id_acc)
+  stopifnot(unique(sample_metadata$id_acc)%in%unique(data$V1))
+  data <- data %>%
+    setnames(c("id_acc","id","Nmet","Ntotal","rate")) %>%
+    merge(sample_metadata[,c("id_acc","cell","group")], by="id_acc")
+}
 
 # Convert beta value to M value only if doing a t-test
 if (opts$statistical.test == "t.test") {
   data[,m:=log2(((rate/100)+0.01)/(1-(rate/100)+0.01))]
 }
+
+cat(sprintf("Number of features before filtering:%s \n",length(unique(data$id))))
+cat(sprintf("Number of cells before filtering:%s \n",length(unique(data$cell))))
 
 #################
 ## Filter data ##
@@ -149,7 +154,8 @@ if (opts$statistical.test == "t.test") {
 print("Filtering data...")
 
 # Filter features by minimum number of cells per group
-data <- data[,Ncells:=min(.N), by=c("id","group")] %>% .[Ncells>=args$min_cells] %>% .[,Ncells:=NULL]
+# View(data[,.(N=.N), by=c("id","group")])
+data <- data[,Ncells:=.N, by=c("id","group")] %>% .[Ncells>=args$min_cells] %>% .[,Ncells:=NULL]
 
 # Remove features that have observations in only one group
 data <- data[,Ngroup:=length(unique(group)), by="id"] %>% .[Ngroup==2] %>% .[,Ngroup:=NULL]
@@ -158,6 +164,9 @@ data <- data[,Ngroup:=length(unique(group)), by="id"] %>% .[Ngroup==2] %>% .[,Ng
 # if (!is.na(opts$number_features)) {
 #   data[,var := var(rate), by="id"] %>% setorder(-var) %>% head(n=opts$number_features) %>% .[,var:=NULL]
 # }
+
+cat(sprintf("Number of features after filtering:%s \n",length(unique(data$id))))
+cat(sprintf("Number of cells after filtering:%s \n",length(unique(data$cell))))
 
 ###########################
 ## Differential analysis ##

@@ -22,6 +22,8 @@ if (grepl("ricard",Sys.info()['nodename'])) {
 } else if (Sys.info()[['nodename']]=="BI2404M") {
   io$basedir <- "/Users/argelagr/data/tet_chimera_nmtseq"
   io$atlas.basedir <- "/Users/argelagr/data/gastrulation10x"
+  io$atlas.basedir <- "/Users/argelagr/data/gastrulation10x"
+  io$multiome.basedir <- "/Users/argelagr/data/gastrulation_multiome_10x"
 } else if (grepl("bi2228m", tolower(Sys.info()["nodename"]))){
   io$basedir <- "/Users/clarks/data/nmt_tet_chimera"
 } else if (grepl("pebble|headstone", Sys.info()['nodename'])) {
@@ -30,6 +32,7 @@ if (grepl("ricard",Sys.info()['nodename'])) {
   } else if (grepl("argelag", Sys.info()['effective_user'])) {
     io$basedir <- "/bi/group/reik/ricard/data/tet_chimera_nmtseq"
     io$atlas.basedir <- "/bi/group/reik/ricard/data/pijuansala2019_gastrulation10x"
+  	io$multiome.basedir <- "/bi/group/reik/ricard/data/gastrulation_multiome_10x"
   }
 } else {
   stop("Computer not recognised")
@@ -64,7 +67,12 @@ io$acc_data_parsed_pseudobulk <- paste0(io$acc_data_parsed,"/pseudobulk")
 io$acc.stats <- paste0(io$basedir,"/acc/results/stats/sample_stats.txt")
 io$acc.diff <- paste0(io$basedir,"/acc/results/differential/feature_level/lineages")
 
-# Atlas information
+# 10x multiome information
+io$multiome.metadata <- paste0(io$multiome.basedir,"/sample_metadata.txt.gz")
+io$multiome.differential <- paste0(io$multiome.basedir,"/results/differential")
+io$multiome.sce <- paste0(io$multiome.basedir,"/processed/SingleCellExperiment.rds")
+
+# PijuanSala2019 information
 io$atlas.metadata <- paste0(io$atlas.basedir,"/sample_metadata.txt.gz")
 io$atlas.marker_genes <- paste0(io$atlas.basedir,"/results/marker_genes/all_stages/marker_genes.txt.gz")
 io$atlas.differential <- paste0(io$atlas.basedir,"/results/differential")
