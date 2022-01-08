@@ -202,16 +202,17 @@ opts$plates <- c(
 )
 
 opts$samples <- c(
+  "E7.5_WT",
   "E7.5_TET_TKO",
   "E7.5_TET_TKO_crispr",
-  "E8.5_WT_CD41+",
-  "E8.5_TET_TKO_CD41+",
-  "E8.5_WT_KDR+",
-  "E8.5_TET_TKO_KDR+",
-  "E8.5_WT_KDR+_CD41+",
-  "E8.5_TET_TKO_KDR+_CD41+",
   "E8.5_WT",
-  "E8.5_TET_TKO"
+  "E8.5_WT_CD41+",
+  "E8.5_WT_KDR+",
+  "E8.5_WT_KDR+_CD41+",
+  "E8.5_TET_TKO",
+  "E8.5_TET_TKO_KDR+",
+  "E8.5_TET_TKO_CD41+",
+  "E8.5_TET_TKO_KDR+_CD41+"
 )
 
 opts$chr <- paste0("chr",c(1:19,"X","Y"))

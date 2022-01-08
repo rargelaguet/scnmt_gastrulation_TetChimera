@@ -75,8 +75,6 @@ acc.dt <- merge(acc.dt, sample_metadata[,c("cell","id_acc")], by="id_acc") %>%
 # Merge
 metacc.dt <- rbind(met.dt,acc.dt)
 
-
-
 #######################
 ## Load marker peaks ##
 #######################

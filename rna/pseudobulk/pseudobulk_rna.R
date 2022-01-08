@@ -1,6 +1,4 @@
-# library(muscat)
-
-suppressPackageStartupMessages(library(Seurat))
+# suppressPackageStartupMessages(library(Seurat))
 
 source(here::here("settings.R"))
 source(here::here("utils.R"))
@@ -25,11 +23,11 @@ args <- p$parse_args(commandArgs(TRUE))
 #####################
 
 ## START TEST ##
-# args$metadata <- file.path(io$basedir,"results/rna/mapping/sample_metadata_after_mapping.txt.gz")
-# args$sce <- file.path(io$basedir,"processed/rna/SingleCellExperiment.rds")
-# args$group_by <- "celltype.mapped"
+# args$metadata <- file.path(io$basedir,"results_new/rna/mapping/sample_metadata_after_mapping.txt.gz")
+# args$sce <- file.path(io$basedir,"processed/rna_new/SingleCellExperiment.rds")
+# args$group_by <- "ko_celltype"
 # args$normalisation_method <- "cpm"
-# args$outdir <- file.path(io$basedir,"results/rna/pseudobulk")
+# args$outdir <- file.path(io$basedir,"results_new/rna/pseudobulk")
 ## END TEST ##
 
 ###############
@@ -38,7 +36,11 @@ args <- p$parse_args(commandArgs(TRUE))
 
 # Load cell metadata
 sample_metadata <- fread(args$metadata) %>%
+  .[,ko:=ifelse(grepl("KO",class),"KO","WT")] %>%
+  .[,ko_celltype:=sprintf("%s-%s",ko,celltype.mapped)] %>%
   .[pass_rnaQC==TRUE & !is.na(eval(as.name(args$group_by)))]
+
+table(sample_metadata[[args$group_by]])
 
 # Load SingleCellExperiment
 sce <- load_SingleCellExperiment(args$sce, cells=sample_metadata$id_rna)
@@ -87,9 +89,9 @@ saveRDS(sce_pseudobulk, file.path(args$outdir,sprintf("SingleCellExperiment_pseu
 ## Create Seurat object from the SingleCellExperiment ##
 ########################################################
 
-sce_pseudobulk@colData$sample <- rownames(sce_pseudobulk@colData)  # at least one metadata column is needed
-seurat_pseudobulk <- as.Seurat(sce_pseudobulk)
-seurat_pseudobulk <- RenameAssays(seurat_pseudobulk, originalexp="RNA")
-
-# Save
-saveRDS(seurat_pseudobulk, file.path(args$outdir,sprintf("Seurat_pseudobulk_%s.rds",args$group_by)))
+# sce_pseudobulk@colData$sample <- rownames(sce_pseudobulk@colData)  # at least one metadata column is needed
+# seurat_pseudobulk <- as.Seurat(sce_pseudobulk)
+# seurat_pseudobulk <- RenameAssays(seurat_pseudobulk, originalexp="RNA")
+# 
+# # Save
+# saveRDS(seurat_pseudobulk, file.path(args$outdir,sprintf("Seurat_pseudobulk_%s.rds",args$group_by)))

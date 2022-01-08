@@ -23,17 +23,18 @@ source(here::here("settings.R"))
 source(here::here("utils.R"))
 
 ## START TEST ##
-# args <- list()
-# args$metadata <- file.path(io$basedir,"results/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
-# args$file  <- file.path(io$basedir,"results/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz")
-# args$test <- TRUE
-# args$outdir  <- file.path(io$basedir,"results/metacc/tss_profiles")
+args <- list()
+args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
+args$file  <- file.path(io$basedir,"results_new/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz")
+args$test <- TRUE
+args$outdir  <- file.path(io$basedir,"results_new/metacc/tss_profiles")
 ## END TEST ##
 
 # I/O
 dir.create(args$outdir, showWarnings = F)
 dir.create(file.path(args$outdir,"per_cell"), showWarnings = F)
 dir.create(file.path(args$outdir,"per_plate"), showWarnings = F)
+dir.create(file.path(args$outdir,"per_class"), showWarnings = F)
 
 # Options
 
@@ -47,7 +48,9 @@ metacc.dt <- fread(args$file)
 ## Load metadata ##
 ###################
 
-sample_metadata <- fread(args$metadata)
+sample_metadata <- fread(args$metadata) %>%
+  .[,class:=ifelse(grepl("WT",class),"WT","TET-TKO")] %>%
+  .[cell%in%unique(metacc.dt$cell)]
 
 #################################################################
 ## Load genome-wide global methylation and accessibility rates ##
@@ -92,26 +95,27 @@ for (i in cells.to.plot) {
 }
 
 ###########################################
-## Plot TSS profiles one plate at a time ##
+## Plot TSS profiles one class at a time ##
 ###########################################
 
-plates.to.plot <- sample_metadata[pass_metQC==TRUE & pass_accQC==TRUE,plate] %>% unique
+# plates.to.plot <- sample_metadata[pass_metQC==TRUE & pass_accQC==TRUE,plate] %>% unique
+classes.to.plot <- unique(sample_metadata$class)
 
 opts$window_size <- max(metacc.dt$dist)
 
-for (i in plates.to.plot) {
+for (i in classes.to.plot) {
   print(i)
   
   # Note that we only use cells that pass quality control for both met and acc
   to.plot <- metacc.dt %>%
-    .[cell%in%sample_metadata[pass_metQC==TRUE & pass_accQC==TRUE & plate==i,cell]] %>%
+    .[cell%in%sample_metadata[pass_metQC==TRUE & pass_accQC==TRUE & class==i,cell]] %>%
     .[,.(rate=mean(rate), N=sum(N)),by=c("cell","dist","context")] %>%
     .[N>=50]
   
   p <- ggplot(to.plot, aes(x=dist, y=rate, group=context, fill=context, color=context)) +
-    stat_summary(geom="ribbon", fun.data="mean_se", alpha=1, color="black") +
-    geom_hline(yintercept=mean(sample_metadata[plate==i,met_rate],na.rm=T), color="#F37A71", linetype="dashed", alpha=0.75, size=1) +
-    geom_hline(yintercept=mean(sample_metadata[plate==i,acc_rate],na.rm=T), color="#00BFC4", linetype="dashed", alpha=0.75, size=1) +
+    stat_summary(geom="ribbon", fun.data="mean_sd", alpha=1, color="black") +
+    geom_hline(yintercept=mean(sample_metadata[class==i,met_rate],na.rm=T), color="#F37A71", linetype="dashed", alpha=0.75, size=1) +
+    geom_hline(yintercept=mean(sample_metadata[class==i,acc_rate],na.rm=T), color="#00BFC4", linetype="dashed", alpha=0.75, size=1) +
     # stat_summary(geom="line", fun.data="mean_se") +
     # geom_line(size=2) +
     labs(x="Distance from center (bp)", y="Met/Acc levels (%)") +
@@ -124,13 +128,37 @@ for (i in plates.to.plot) {
       axis.text.x = element_text(size=rel(1.0), colour="black"),
       axis.text.y = element_text(size=rel(1.1), colour="black")
     )
-  # print(p_list[[i]])
   
-  pdf(file.path(args$outdir,sprintf("per_plate/%s.pdf",i)), width=6, height=5)
+  pdf(file.path(args$outdir,sprintf("per_class/%s.pdf",i)), width=6, height=5)
   print(p)
   dev.off()
 }
 
+
+to.plot <- metacc.dt %>%
+  merge(sample_metadata[,c("cell","class")]) %>%
+  .[,.(rate=mean(rate), N=sum(N)),by=c("cell","dist","context","class")] %>%
+  .[N>=50]
+
+p <- ggplot(to.plot, aes(x=dist, y=rate, group=context, fill=context, color=context)) +
+  stat_summary(geom="ribbon", fun.data="mean_sd", alpha=1, color="black") +
+  geom_hline(aes(yintercept=V1), color="#F37A71", linetype="dashed", alpha=0.75, size=1, data=sample_metadata[,mean(met_rate),by="class"]) +
+  geom_hline(aes(yintercept=V1), color="#00BFC4", linetype="dashed", alpha=0.75, size=1, data=sample_metadata[,mean(acc_rate),by="class"]) +
+  facet_wrap(~class, nrow=1) +
+  labs(x="Distance from center (bp)", y="Met/Acc levels (%)") +
+  coord_cartesian(ylim=c(10,80)) +
+  xlim(-opts$window_size, opts$window_size) +
+  guides(fill="none", color="none", linetype="none") +
+  theme_classic() +
+  theme(
+    strip.text = element_text(size=rel(1.15), colour="black"),
+    axis.text.x = element_text(size=rel(1.0), colour="black"),
+    axis.text.y = element_text(size=rel(1.1), colour="black")
+  )
+
+pdf(file.path(args$outdir,"per_class/metacc_profiles.pdf"), width=7, height=5)
+print(p)
+dev.off()
 
 ###########################################################
 ## Scatterplots or CG vs GC promoter-to-background ratio ##

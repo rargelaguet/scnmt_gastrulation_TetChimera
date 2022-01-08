@@ -61,15 +61,14 @@ smoother_aggregate_nearest_nb <- function(mat, D, k){
   # @param mat A matrix in a shape of #genes x #samples.
   # @param D A predefined distance matrix in a shape of #samples x #samples.
   # @param k An integer to choose \code{k} nearest samples (self-inclusive) to
-  #  aggregate based on the distance matrix \code{D}.
-  denoised_mat <- sapply(seq_len(ncol(mat)), function(cid){
+  #  aggregate based on the distance matrix \code{D}. If \code{k} is greater than
+  #  #samples, \code{k} is forced to be #samples to continue aggregation.
+  sapply(seq_len(ncol(mat)), function(cid){
     nb_cid <- head(order(D[cid, ]), k)
     closest_mat <- mat[, nb_cid, drop=FALSE]
     # return(Matrix::rowSums(closest_mat))
-    return(Matrix::rowMeans(closest_mat))
+    return(Matrix::rowMeans(closest_mat,na.rm=T))
   })
-  dimnames(denoised_mat) <- dimnames(mat)
-  return(denoised_mat)
 }
 
 
