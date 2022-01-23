@@ -15,7 +15,6 @@ dir.create(io$outdir, showWarnings = F)
 opts$samples <- c(
   "E7.5_WT",
   "E7.5_TET_TKO",
-  # "E7.5_TET_TKO_crispr",
   "E8.5_WT",
   "E8.5_WT_CD41+",
   "E8.5_WT_KDR+",
@@ -109,8 +108,8 @@ p <- ggplot(to.plot, aes(x=celltype, y=N)) +
   theme_bw() +
   theme(
     legend.position = "none",
-    # strip.background = element_blank(),
-    strip.background =element_rect(fill=alpha("#DBDBDB", 0.50)),
+    strip.background = element_blank(),
+    # strip.background =element_rect(fill=alpha("#DBDBDB", 0.50)),
     strip.text = element_text(color="black", size=rel(0.85)),
     axis.title.x = element_text(color="black", size=rel(0.9)),
     axis.title.y = element_blank(),
@@ -118,6 +117,42 @@ p <- ggplot(to.plot, aes(x=celltype, y=N)) +
     axis.text.x = element_text(size=rel(1), color="black")
   )
 
-pdf(file.path(io$outdir,"celltype_proportions_fig.pdf"), width=12, height=8)
+pdf(file.path(io$outdir,"celltype_proportions_fig.pdf"), width=12, height=7)
+print(p)
+dev.off()
+
+
+#######################
+## Barplot per class ##
+#######################
+
+to.plot <- sample_metadata %>%
+  .[,class2:=ifelse(grepl("WT",class),"WT","Tet-TKO")] %>%
+  .[,N:=.N,by="class2"] %>%
+  .[,.(N=.N, celltype_proportion=.N/unique(N)),by=c("class2","celltype")] %>%
+  .[,class2:=factor(class2,levels=c("WT","Tet-TKO"))]
+
+# Filter celltypes with small N
+to.plot <- to.plot %>% .[,celltype:=factor(celltype,levels=rev(opts$celltypes[opts$celltypes%in%unique(celltype)]))]
+
+p <- ggplot(to.plot, aes(x=celltype, y=N)) +
+  geom_bar(aes(fill=celltype), stat="identity", color="black") +
+  scale_fill_manual(values=opts$celltype.colors) +
+  facet_wrap(~class2, nrow=1, scales="free_x") +
+  coord_flip() +
+  labs(y="Number of cells") +
+  theme_bw() +
+  theme(
+    legend.position = "none",
+    strip.background = element_blank(),
+    # strip.background =element_rect(fill=alpha("#DBDBDB", 0.50)),
+    strip.text = element_text(color="black", size=rel(0.85)),
+    axis.title.x = element_text(color="black", size=rel(0.9)),
+    axis.title.y = element_blank(),
+    axis.text.y = element_text(size=rel(1), color="black"),
+    axis.text.x = element_text(size=rel(1), color="black")
+  )
+
+pdf(file.path(io$outdir,"celltype_proportions_WT_vs_TKO.pdf"), width=5, height=6)
 print(p)
 dev.off()

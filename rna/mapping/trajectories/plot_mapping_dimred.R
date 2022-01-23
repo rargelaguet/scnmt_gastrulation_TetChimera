@@ -1,6 +1,7 @@
-# here::i_am("mapping/analysis/plot_mapping_umap.R")
+here::i_am("rna/mapping/trajectories/plot_mapping_dimred.R")
 
 source(here::here("settings.R"))
+source(here::here("rna/mapping/analysis/plot_utils.R"))
 
 ######################
 ## Define arguments ##
@@ -16,7 +17,7 @@ args <- p$parse_args(commandArgs(TRUE))
 
 ## START TEST ##
 args$query_metadata <- file.path(io$basedir,"results_new/rna/mapping/trajectories/blood/sample_metadata_after_mapping.txt.gz")
-args$atlas_metadata <- file.path(io$atlas.basedir,"results/trajectories/blood/blood_sample_metadata.txt.gz")
+args$atlas_metadata <- file.path(io$atlas.basedir,"results/trajectories/blood_scanpy/blood_sample_metadata.txt.gz")
 args$outdir <- file.path(io$basedir,"results_new/rna/mapping/trajectories/blood/pdf")
 ## END TEST ##
 
@@ -31,65 +32,40 @@ dir.create(file.path(args$outdir,"per_class"), showWarnings = F)
 # Options
 
 # Dot size
-opts$size.mapped <- 0.18
+opts$size.mapped <- 0.35
 opts$size.nomapped <- 0.1
 
 # Transparency
-opts$alpha.mapped <- 0.65
+opts$alpha.mapped <- 0.75
 opts$alpha.nomapped <- 0.35
+
+opts$subset_atlas_cells <- TRUE
 
 #########################
 ## Load query metadata ##
 #########################
 
 sample_metadata <- fread(args$query_metadata) %>%
+  .[,class2:=ifelse(grepl("WT",class),"WT","Tet-TKO")] %>%
   .[!is.na(closest.cell)]
 
+# sample_metadata[class2=="Tet-TKO" & global_mapping=="Endothelium"]
 ################
 ## Load atlas ##
 ################
 
-# Load atlas cell metadata
-meta_atlas <- fread(args$atlas_metadata) %>%
-  setnames(c("DC1","DC2"),c("V1","V2"))
+# Load atlas trajectory
+atlas_trajectory.dt <- fread(file.path(io$atlas.basedir,"results/trajectories/blood_scanpy/blood_trajectory.txt.gz")) %>% 
+  setnames(c("FA1","FA2"),c("V1","V2"))
+meta_atlas <- fread(args$atlas_metadata)[,c("cell","stage","celltype")] %>% merge(atlas_trajectory.dt, by="cell")
 
-##############################
-## Define plotting function ##
-##############################
-
-plot.dimred <- function(plot_df, query.label, atlas.label = "Atlas") {
-  
-  # Define dot size  
-  size.values <- c(opts$size.mapped, opts$size.nomapped)
-  names(size.values) <- c(query.label, atlas.label)
-  
-  # Define dot alpha  
-  alpha.values <- c(opts$alpha.mapped, opts$alpha.nomapped)
-  names(alpha.values) <- c(query.label, atlas.label)
-  
-  # Define dot colours  
-  colour.values <- c("red", "lightgrey")
-  names(colour.values) <- c(query.label, atlas.label)
-  
-  # Plot
-  ggplot(plot_df, aes(x=V1, y=V2)) +
-    ggrastr::geom_point_rast(aes(size=mapped, alpha=mapped, colour=mapped)) +
-    scale_size_manual(values = size.values) +
-    scale_alpha_manual(values = alpha.values) +
-    scale_colour_manual(values = colour.values) +
-    # labs(x="UMAP Dimension 1", y="UMAP Dimension 2") +
-    guides(colour = guide_legend(override.aes = list(size=6))) +
-    theme_classic() +
-    theme(
-      legend.position = "top", 
-      legend.title = element_blank(),
-      axis.line = element_blank(),
-      axis.text = element_blank(),
-      axis.title = element_blank(),
-      axis.ticks = element_blank()
-    )
+# Subset cells to speed up plotting
+if (opts$subset_atlas_cells) {
+  meta_atlas <- rbind(
+    meta_atlas[cell%in%unique(sample_metadata$closest.cell)],
+    meta_atlas %>% .[!cell%in%unique(sample_metadata$closest.cell)] %>% .[sample.int(n=nrow(.), size=nrow(.)/1.5)]
+  )
 }
-
 
 ###############################
 ## Plot one sample at a time ##
@@ -132,6 +108,29 @@ for (i in classes.to.plot) {
   print(p)
   dev.off()
 }
+
+#############################
+## Plot WT and KO together ##
+#############################
+
+# Subsample query cells to have the same N per class
+# sample_metadata_subset <- sample_metadata %>% .[,.SD[sample.int(n=.N, size=4500)], by=c("stage","class2")]
+
+# i <- "E7.5"
+to.plot <- meta_atlas %>% copy %>%
+  .[,index.wt:=match(cell, sample_metadata[class2=="WT",closest.cell] )] %>%
+  .[,index.ko:=match(cell, sample_metadata[class2=="Tet-TKO",closest.cell] )] %>%
+  .[,mapped.wt:=c(0,-10)[as.numeric(as.factor(!is.na(index.wt)))]] %>%
+  .[,mapped.ko:=c(0,10)[as.numeric(as.factor(!is.na(index.ko)))]] %>%
+  .[,mapped:=factor(mapped.wt + mapped.ko, levels=c("0","-10","10"))] %>%
+  .[,mapped:=plyr::mapvalues(mapped, from = c("0","-10","10"), to = c("Atlas","WT","Tet-TKO"))] %>% setorder(mapped)
+
+p <- plot.dimred.wtko(to.plot, wt.label = "WT", ko.label = "Tet-TKO", nomapped.label = "Atlas") +
+  theme(legend.position = "top", axis.line = element_blank())
+
+pdf(sprintf("%s/per_class/umap_mapped_WT_and_KO.pdf",args$outdir), width=5.5, height=6.5)
+print(p)
+dev.off()
 
 # Completion token
 file.create(file.path(args$outdir,"completed.txt"))

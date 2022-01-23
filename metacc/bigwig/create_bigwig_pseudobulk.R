@@ -91,8 +91,6 @@ genomic_windows.dt <- opts$chr %>%  map(function(x)
 ## Load pseudobulk data, overlap and export bigwig ##
 #####################################################
 
-# TO-DO: TRY ADJUSTING BY THE BACKGROUND RATE
-
 for (i in args$samples) {
 
   print(i)

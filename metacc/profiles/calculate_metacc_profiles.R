@@ -26,14 +26,14 @@ args <- p$parse_args(commandArgs(TRUE))
 ###################
 
 ## START TEST ##
-args <- list()
-args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
-args$anno <- "multiome_peaks"
-args$window_size <- 2000
-args$met_tile <- 100
-args$acc_tile <- 50
-args$outfile  <- file.path(io$basedir,sprintf("results_new/metacc/profiles/%s/precomputed_metacc_%s.txt.gz",args$anno,args$anno))
-args$test <- FALSE
+# args <- list()
+# args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
+# args$anno <- "multiome_peaks"
+# args$window_size <- 2000
+# args$met_tile <- 100
+# args$acc_tile <- 50
+# args$outfile  <- file.path(io$basedir,sprintf("results_new/metacc/profiles/%s/precomputed_metacc_%s.txt.gz",args$anno,args$anno))
+# args$test <- FALSE
 ## END TEST ##
 
 # I/O
@@ -51,10 +51,10 @@ opts$positions <- c("center"); names(opts$positions) <- args$anno
 sample_metadata <- fread(args$metadata)
 
 # Define cells
-# opts$met.cells <- sample_metadata[pass_metQC==TRUE,id_met]
-# opts$acc.cells <- sample_metadata[pass_accQC==TRUE,id_acc]
-opts$met.cells <- sample_metadata[!is.na(id_met),id_met]
-opts$acc.cells <- sample_metadata[!is.na(id_acc),id_acc]
+opts$met.cells <- sample_metadata[pass_metQC==TRUE,id_met]
+opts$acc.cells <- sample_metadata[pass_accQC==TRUE,id_acc]
+# opts$met.cells <- sample_metadata[!is.na(id_met),id_met]
+# opts$acc.cells <- sample_metadata[!is.na(id_acc),id_acc]
 
 if (args$test) opts$met.cells <- opts$met.cells %>% head(n=5)
 if (args$test) opts$acc.cells <- opts$acc.cells %>% head(n=5)

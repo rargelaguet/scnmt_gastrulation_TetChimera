@@ -38,7 +38,7 @@ source(here::here("metacc/pseudobulk/utils.R"))
 # args$metadata <- file.path(io$basedir,"results/met/qc/sample_metadata_after_met_qc.txt.gz")
 # args$context <- "CG"
 # args$group_by <- "sample"
-# args$min_cells <- 25
+# args$min_cells <- 10
 # args$ncores <- 1
 # args$test <- TRUE
 ## END TEST ##

@@ -76,6 +76,7 @@ scripts:
     pseudobulk: ../pseudobulk/pseudobulk_cpg_level.R
     boxplots_metacc_feature_level: ../boxplots_feature_level/boxplots_feature_level.R
     calculate_tss_profiles: ../profiles/calculate_metacc_profiles.R
+    calculate_profiles_multiome_peaks: ../profiles/calculate_metacc_profiles.R
     plot_tss_profiles: ../profiles/plot_metacc_profiles.R
     bigwig: ../bigwig/create_bigwig_pseudobulk.R
     metrna_coupling: ../../metrna/coupling/local_coupling/calculate_metrna_coupling.R
@@ -100,11 +101,15 @@ params:
     pseudobulk:
         # group_by: ["sample","celltype_class"]
         group_by: ["celltype_class"]
-        min_cells: 15
+        min_cells: 10
     calculate_tss_profiles:
         window_size: 3000
-        met_tile: 100
-        acc_tile: 50
+        met_tile: 150
+        acc_tile: 100
+    calculate_profiles_multiome_peaks:
+        window_size: 1500
+        met_tile: 150
+        acc_tile: 100
     bigwig_met:
         step_size: 500
         min_rate_bigwig: 10
@@ -155,6 +160,9 @@ slurm:  # memory in MB
         threads: 1
     calculate_tss_profiles: 
         memory: 50000
+        threads: 1
+    calculate_profiles_multiome_peaks: 
+        memory: 100000
         threads: 1
     plot_tss_profiles: 
         memory: 10000

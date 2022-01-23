@@ -1,7 +1,6 @@
 here::here("metacc/boxplots_feature_level/boxplots_feature_level.R")
 
-source(here::here("settings.R"))
-source(here::here("utils.R"))
+suppressMessages(library(argparse))
 
 ######################
 ## Define arguments ##
@@ -21,6 +20,9 @@ args <- p$parse_args(commandArgs(TRUE))
 ###################
 ## Load settings ##
 ###################
+
+source(here::here("settings.R"))
+source(here::here("utils.R"))
 
 ## START TEST ##
 # args <- list()
@@ -79,14 +81,17 @@ metacc.dt <- rbind(met.dt,acc.dt)
 
 marker_peaks.dt <- fread(args$markers_file)
 
-# scnmt.peaks <- unique(metacc.dt$id)
-# multiome.peaks <- unique(marker_peaks.dt$idx)
-# length(scnmt.peaks)
-# length(multiome.peaks)
+scnmt.peaks <- unique(metacc.dt$id)
+multiome.peaks <- unique(marker_peaks.dt$idx)
 
-###############################
-## Prepare data for plotting ##
-###############################
+length(scnmt.peaks)
+length(multiome.peaks)
+
+# length(intersect(unique(marker_peaks.dt$idx),unique(metacc.dt$id)))
+
+############################
+## Calculate global rates ##
+############################
 
 global_rates.dt <- sample_metadata[,c("cell","met_rate","acc_rate")] %>% 
   setnames(c("cell","CG","GC")) %>%

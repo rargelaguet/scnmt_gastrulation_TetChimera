@@ -32,15 +32,15 @@ args <- p$parse_args(commandArgs(TRUE))
 source(here::here("rna/mapping/trajectories/mapping_functions.R"))
 
 ## START TEST ##
-# args$query_samples <- opts$samples
-# args$query_sce <- paste0(io$basedir,"/processed/rna_new/SingleCellExperiment.rds")
-# args$query_metadata <- paste0(io$basedir,"/results_new/rna/mapping/sample_metadata_after_mapping.txt.gz")
-# args$atlas_sce <- file.path(io$atlas.basedir,"results/trajectories/blood/blood_SingleCellExperiment.rds")
-# args$atlas_metadata <- file.path(io$atlas.basedir,"results/trajectories/blood/blood_sample_metadata.txt.gz")
-# args$npcs <- 10
-# args$n_neighbours <- 15
-# args$trajectory_name <- "blood"
-# args$outfile <- paste0(io$basedir,"/results_new/rna/mapping/trajectories/blood/mapping_mnn.txt.gz")
+args$query_samples <- opts$samples
+args$query_sce <- paste0(io$basedir,"/processed/rna_new/SingleCellExperiment.rds")
+args$query_metadata <- paste0(io$basedir,"/results_new/rna/mapping/sample_metadata_after_mapping.txt.gz")
+args$atlas_sce <- file.path(io$atlas.basedir,"results/trajectories/blood_scanpy/blood_SingleCellExperiment.rds")
+args$atlas_metadata <- file.path(io$atlas.basedir,"results/trajectories/blood_scanpy/blood_sample_metadata.txt.gz")
+args$npcs <- 10
+args$n_neighbours <- 15
+args$trajectory_name <- "blood"
+args$outfile <- file.path(io$basedir,"results_new/rna/mapping/trajectories/blood/sample_metadata_after_mapping.txt.gz")
 ## END TEST ##
 
 # Options
@@ -153,12 +153,7 @@ mapping  <- mapWrap(
 ## Save ##
 ##########
 
-mapping.dt <- mapping$mapping %>% 
-  .[,c("cell","celltype.mapped","celltype.score","closest.cell")] %>% 
-  # merge(meta_query,by="cell") %>%
-  as.data.table
-
-# foo <- merge(meta_query[,c("cell","class","celltype.mapped")],mapping.dt[,c("cell","celltype.mapped")], by="cell", all=T)
-
-fwrite(mapping.dt, args$outfile, sep="\t")
+tmp <- meta_query[,c("cell","sample","class","celltype.mapped")] %>% setnames("celltype.mapped","global_mapping")
+to.save <- mapping$mapping %>% merge(tmp, by="cell")
+fwrite(to.save, args$outfile, sep="\t", na="NA", quote=F)
 

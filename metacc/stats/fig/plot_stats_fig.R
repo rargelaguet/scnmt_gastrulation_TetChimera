@@ -113,3 +113,28 @@ p <- ggboxplot(to.plot3, x = "ko", y = "rate", outlier.shape=NA, fill="ko", alph
 pdf(file.path(io$outdir,sprintf("%s_global_levels_wt_vs_ko.pdf",opts$context)), width=7, height=4.5)
 print(p)
 dev.off()
+
+
+###################################################
+## Number of cells with multi-omics measurements ##
+###################################################
+
+to.plot <- sample_metadata %>%
+  .[,ko:=ifelse(grepl("KO",class),"Tet-TKO","WT")] %>%
+  .[,.(met=sum(!is.na(id_met)), acc=sum(!is.na(id_acc)), rna=sum(!is.na(id_rna))),by="ko"] %>%
+  melt(id.vars="ko")
+
+p <- ggplot(to.plot, aes_string(x="ko", y="value", fill="variable")) +
+  geom_bar(stat="identity", position="dodge", color="black") +
+  labs(x="", y="Number of cells") +
+  scale_fill_manual(values=c(acc="#00BFC4", rna="#00CD00", met="#F8766D")) +
+  theme_classic() +
+  theme(
+    legend.title = element_blank(),
+    axis.text.y = element_text(size=rel(1.0), color="black"),
+    axis.text.x = element_text(size=rel(1.2), color="black")
+  )
+
+pdf(file.path(io$outdir,"number_cells_per_omic.pdf"), width=7, height=5)
+print(p)
+dev.off()

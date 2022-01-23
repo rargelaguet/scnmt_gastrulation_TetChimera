@@ -23,17 +23,15 @@ source(here::here("settings.R"))
 source(here::here("utils.R"))
 
 ## START TEST ##
-args <- list()
-args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
-args$file  <- file.path(io$basedir,"results_new/metacc/tss_profiles/precomputed_metacc_prom_200_200.txt.gz")
-args$test <- TRUE
-args$outdir  <- file.path(io$basedir,"results_new/metacc/tss_profiles")
+# args <- list()
+# args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
+# args$file  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks/precomputed_metacc_multiome_peaks.txt.gz")
+# args$outdir  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks")
 ## END TEST ##
 
 # I/O
 dir.create(args$outdir, showWarnings = F)
 dir.create(file.path(args$outdir,"per_cell"), showWarnings = F)
-dir.create(file.path(args$outdir,"per_plate"), showWarnings = F)
 dir.create(file.path(args$outdir,"per_class"), showWarnings = F)
 
 # Options
@@ -51,10 +49,6 @@ metacc.dt <- fread(args$file)
 sample_metadata <- fread(args$metadata) %>%
   .[,class:=ifelse(grepl("WT",class),"WT","TET-TKO")] %>%
   .[cell%in%unique(metacc.dt$cell)]
-
-#################################################################
-## Load genome-wide global methylation and accessibility rates ##
-#################################################################
 
 ##########################################
 ## Plot TSS profiles one cell at a time ##
@@ -163,6 +157,8 @@ dev.off()
 ###########################################################
 ## Scatterplots or CG vs GC promoter-to-background ratio ##
 ###########################################################
+
+# Note that this is only applied for TSS
 
 opts$min_gc_ratio <- 1.5
 opts$max_cg_ratio <- 0.5

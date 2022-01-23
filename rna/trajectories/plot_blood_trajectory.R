@@ -72,8 +72,9 @@ colData(sce) <- sample_metadata.dt %>% tibble::column_to_rownames("id_rna") %>% 
 
 to.plot <- trajectory.dt %>% merge(sample_metadata.dt, by="id_rna")
 
-ggplot(to.plot, aes(x=V1, y=V2, fill=celltype)) +
-  geom_point(size=2.5, shape=21, stroke=0.25) +
+p <- ggplot(to.plot, aes(x=V1, y=V2, fill=celltype)) +
+  # geom_point(size=3, shape=21, stroke=0.25) +
+  geom_jitter(size=3, shape=21, stroke=0.25, width=0.002, height=0.002) +
   scale_fill_manual(values=opts$celltype.colors) +
   ggrepel::geom_text_repel(aes_string(label="celltype"), data=to.plot[,.(V1=median(V1), V2=median(V2)), by="celltype"]) +
   theme_classic() +
@@ -83,10 +84,9 @@ ggplot(to.plot, aes(x=V1, y=V2, fill=celltype)) +
     legend.position="none"
   )
 
-
-# pdf(paste0(io$outdir,"/rna_umap.pdf"), width=5, height=3, useDingbats = F)
-# print(p)
-# dev.off()
+pdf(paste0(io$outdir,"/trajectory_coloured_by_cellype.pdf"), width=6, height=5)
+print(p)
+dev.off()
 
 ##########################
 ## Plot gene expression ##
@@ -102,8 +102,9 @@ for (i in genes.to.plot) {
   ) %>% merge(trajectory.dt, by="id_rna")
   
   p <- ggplot(to.plot, aes(x=V1, y=V2, fill=expr)) +
-    geom_point(size=2.5, shape=21, stroke=0.2) +
-    scale_fill_gradient2(low = "gray50", mid="gray90", high = "red") +
+    # geom_point(size=3, shape=21, stroke=0.2) +
+    geom_jitter(size=3, shape=21, stroke=0.25, width=0.002, height=0.002) +
+    scale_fill_gradient2(low = "gray50", mid="gray90", high = "darkgreen") +
     # ggrepel::geom_text_repel(aes_string(label="celltype"), data=to.plot[,.(V1=median(V1), V2=median(V2)), by="celltype"]) +
     theme_classic() +
     labs(x="", y="", title=i) +
@@ -112,9 +113,9 @@ for (i in genes.to.plot) {
       legend.position="none"
     )
   
-  # pdf(sprintf("%s/%s_barplot_pseudobulk.pdf",io$outdir,gene), width=10, height=9)
+  pdf(file.path(io$outdir,sprintf("trajectory_coloured_by_%s_expr.pdf",i)), width=6, height=5)
   print(p)
-  # dev.off()
+  dev.off()
     
 }
 
@@ -126,23 +127,21 @@ for (i in genes.to.plot) {
 to.plot <- global_rates_metacc.dt %>% merge(trajectory.dt, by="id_rna") %>% 
   merge(sample_metadata.dt[,c("id_rna","class")],by="id_rna")
 
-# to.plot[grepl("KO",class),met_rate_imputed:=met_rate_imputed+5]
-
 # Just for visualisation purposes
 max.meth <- 83
 to.plot[met_rate_imputed>max.meth,met_rate_imputed:=max.meth]
 
 p <- ggplot(to.plot, aes(x=V1, y=V2, fill=met_rate_imputed)) +
-  geom_jitter(size=2.5, shape=21, stroke=0.2, width=0.002, height=0.002) +
+  geom_jitter(size=3, shape=21, stroke=0.25, width=0.002, height=0.002) +
   theme_classic() +
   scale_fill_distiller(palette = "YlOrRd", direction=1) +
   # labs(x="", y="", title="Global DNA methylation") +
   ggplot_theme_NoAxes() +
   theme(
-    legend.position="right"
+    legend.position="none"
   )
 
-pdf(file.path(io$outdir,"global_met_blood_trajectory.pdf"), width=7, height=6)
+pdf(file.path(io$outdir,"trajectory_coloured_by_global_met.pdf"), width=7, height=6)
 print(p)
 dev.off()
   
