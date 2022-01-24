@@ -29,9 +29,9 @@ args <- p$parse_args(commandArgs(TRUE))
 # args <- list()
 # args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
 # args$anno <- "multiome_peaks"
-# args$window_size <- 2000
-# args$met_tile <- 100
-# args$acc_tile <- 50
+# args$window_size <- 1500
+# args$met_tile <- 150
+# args$acc_tile <- 75
 # args$outfile  <- file.path(io$basedir,sprintf("results_new/metacc/profiles/%s/precomputed_metacc_%s.txt.gz",args$anno,args$anno))
 # args$test <- FALSE
 ## END TEST ##
@@ -59,7 +59,9 @@ opts$acc.cells <- sample_metadata[pass_accQC==TRUE,id_acc]
 if (args$test) opts$met.cells <- opts$met.cells %>% head(n=5)
 if (args$test) opts$acc.cells <- opts$acc.cells %>% head(n=5)
 
-sample_metadata <- sample_metadata[id_met%in%opts$met_cells | id_acc%in%opts$acc.cells]
+sample_metadata <- sample_metadata[id_met%in%opts$met.cells | id_acc%in%opts$acc.cells]
+
+table(sample_metadata$sample)
 
 ##############
 ## Load data #

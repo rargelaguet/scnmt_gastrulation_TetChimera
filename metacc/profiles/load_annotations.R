@@ -5,7 +5,7 @@
 # Load genomic annotations
 anno_list <- list()
 for (i in args$anno) {
-  tmp <- fread(sprintf("%s/%s.bed.gz",io$features.dir,i), 
+  tmp <- fread(sprintf("%s/%s.bed.gz",io$features.dir,i), select=1:5,
                colClasses=c("V1"="character", "V2"="numeric", "V3"="numeric", "V4"="factor", "V5"="character")) %>%
     setnames(c("chr","start","end","strand","id")) %>%
     .[,anno:=factor(i)] %>%

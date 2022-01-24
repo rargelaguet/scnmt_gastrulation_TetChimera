@@ -310,7 +310,7 @@ rule calculate_tss_profiles:
     threads: 
         config["slurm"]["calculate_tss_profiles"]["threads"]
     resources:
-        mem_mb = config["slurm"]["quantify_feature_level"]["memory"]
+        mem_mb = config["slurm"]["calculate_tss_profiles"]["memory"]
     shell:
         "Rscript {input.script} --met_tile {params.met_tile} --acc_tile {params.acc_tile} --window_size {params.window_size} --metadata {input.metadata} \
         --anno prom_200_200 --outfile {output} > {log}"
@@ -331,7 +331,7 @@ rule calculate_profiles_multiome_peaks:
     threads: 
         config["slurm"]["calculate_profiles_multiome_peaks"]["threads"]
     resources:
-        mem_mb = config["slurm"]["quantify_feature_level"]["memory"]
+        mem_mb = config["slurm"]["calculate_profiles_multiome_peaks"]["memory"]
     shell:
         "Rscript {input.script} --met_tile {params.met_tile} --acc_tile {params.acc_tile} --window_size {params.window_size} --metadata {input.metadata} \
         --anno multiome_peaks --outfile {output} > {log}"

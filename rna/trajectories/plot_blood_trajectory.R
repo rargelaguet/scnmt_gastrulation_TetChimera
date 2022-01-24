@@ -14,14 +14,16 @@ dir.create(io$outdir, showWarnings=F)
 ## Load sample metadata ##
 ##########################
 
-sample_metadata.dt <- fread(file.path(io$trajectory.dir,"blood_sample_metadata.txt.gz")) 
+sample_metadata.dt <- fread(file.path(io$trajectory.dir,"blood_sample_metadata.txt.gz")) %>%
+  .[,class2:=ifelse(grepl("WT",class),"WT","TET-TKO")] %>% .[,class:=factor(class,levels=c("WT","TET-TKO"))]
 
 #####################
 ## Load trajectory ##
 #####################
 
 trajectory.dt <- fread(file.path(io$trajectory.dir,"blood_trajectory.txt.gz")) %>%
-  setnames(c("DC1","DC2"),c("V1","V2"))
+  setnames(c("DC1","DC2"),c("V1","V2")) %>%
+  .[,PC1:=-PC1]
 
 ##################
 ## Load Met/Acc ##
@@ -66,9 +68,9 @@ sce <- load_SingleCellExperiment(io$rna.sce, normalise = T, cells=sample_metadat
 # Add sample metadata as colData
 colData(sce) <- sample_metadata.dt %>% tibble::column_to_rownames("id_rna") %>% DataFrame
 
-###################################
-## Plot dimensionality reduction ##
-###################################
+######################
+## Plot 2D manifold ##
+######################
 
 to.plot <- trajectory.dt %>% merge(sample_metadata.dt, by="id_rna")
 
@@ -88,9 +90,31 @@ pdf(paste0(io$outdir,"/trajectory_coloured_by_cellype.pdf"), width=6, height=5)
 print(p)
 dev.off()
 
-##########################
-## Plot gene expression ##
-##########################
+########################
+## Plot 1D pseudotime ##
+########################
+
+to.plot <- trajectory.dt %>% 
+  merge(sample_metadata.dt, by="id_rna") %>%
+  merge(data.table(id_rna = colnames(sce), expr = logcounts(sce)["Hba-a1",]), by="id_rna")
+
+ggplot(to.plot, aes(x=PC1, y=expr)) +
+  geom_point(aes(fill=celltype), size=2, shape=21, stroke=0.1) +
+  stat_smooth(method="loess", color="black", alpha=0.75, span=0.5) +
+  geom_rug(aes(color=celltype), sides="b") +
+  scale_color_manual(values=opts$celltype.colors) +
+  scale_fill_manual(values=opts$celltype.colors) +
+  guides(fill="none", color="none") +
+  labs(x="Pseudotime", y="Gene expression") +
+  theme_classic() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+##################################################
+## Overlay gene expression over the 2D manifold ##
+##################################################
 
 genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3")
 
@@ -119,12 +143,12 @@ for (i in genes.to.plot) {
     
 }
 
-
-##################
-## Plot Met/Acc ##
-##################
+##########################################
+## Overlay met/acc over the 2D manifold ##
+##########################################
   
-to.plot <- global_rates_metacc.dt %>% merge(trajectory.dt, by="id_rna") %>% 
+to.plot <- global_rates_metacc.dt %>% 
+  merge(trajectory.dt, by="id_rna") %>% 
   merge(sample_metadata.dt[,c("id_rna","class")],by="id_rna")
 
 # Just for visualisation purposes
@@ -145,3 +169,73 @@ pdf(file.path(io$outdir,"trajectory_coloured_by_global_met.pdf"), width=7, heigh
 print(p)
 dev.off()
   
+
+####################################################
+## Overlay gene expression over the 1D pseudotime ##
+####################################################
+
+genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3")
+
+to.plot <- data.table(as.matrix(logcounts(sce)[genes.to.plot,]), keep.rownames = T) %>%
+  setnames("rn","gene") %>%
+  melt(id.vars="gene", variable.name="id_rna", value.name="expr") %>%
+  merge(trajectory.dt, by="id_rna") %>% 
+  merge(sample_metadata.dt[,c("id_rna","class","celltype")],by="id_rna") %>%
+  .[,gene_class:=ifelse(grepl("Dnmt",gene),"DNMT","TET")]
+
+p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
+  # geom_point(aes(fill=celltype), size=2, shape=21, stroke=0.1) +
+  stat_smooth(aes(group=gene), method="loess", color="black", alpha=0.25, span=1) +
+  geom_rug(aes(color=celltype), sides="b") +
+  facet_wrap(~gene_class, nrow=1) +
+  coord_cartesian(ylim=c(0,8.5)) +
+  ggrepel::geom_text_repel(aes_string(label="gene"), data=to.plot[,.SD[which.max(PC1)], by="gene"]) +
+  scale_color_manual(values=opts$celltype.colors[unique(to.plot$celltype)]) +
+  # scale_fill_manual(values=opts$celltype.colors) +
+  # guides(fill="none") +
+  labs(x="Pseudotime", y="Gene expression") +
+  theme_classic() +
+  theme(
+    legend.position = "right",
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(color="black"),
+    axis.ticks.x = element_blank()
+  )
+
+pdf(file.path(io$outdir,"pseudotime_coloured_by_dnmt_tet_expr.pdf"), width=9, height=4)
+print(p)
+dev.off()
+
+
+############################################
+## Overlay Met/Acc over the 1D pseudotime ##
+############################################
+
+to.plot <- global_rates_metacc.dt %>% 
+  merge(trajectory.dt, by="id_rna") %>% 
+  merge(sample_metadata.dt[,c("id_rna","class","class2","celltype")],by="id_rna")
+
+# Just for visualisation purposes
+max.meth <- 80
+to.plot[met_rate_imputed>max.meth,met_rate_imputed:=max.meth]
+
+p <- ggplot(to.plot, aes(x=PC1, y=met_rate_imputed)) +
+  geom_point(aes(fill=celltype), size=2.5, shape=21, stroke=0.15) +
+  stat_smooth(method="loess", color="black", alpha=0.30, span=1) +
+  geom_rug(aes(color=celltype), sides="b") +
+  facet_wrap(~class2, nrow=1) +
+  scale_color_manual(values=opts$celltype.colors[unique(to.plot$celltype)]) +
+  scale_fill_manual(values=opts$celltype.colors) +
+  # guides(fill="none") +
+  labs(x="Pseudotime", y="Global DNA methylation (%)") +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(color="black"),
+    axis.ticks.x = element_blank()
+  )
+
+pdf(file.path(io$outdir,"pseudotime_coloured_by_global_met.pdf"), width=7, height=4)
+print(p)
+dev.off()

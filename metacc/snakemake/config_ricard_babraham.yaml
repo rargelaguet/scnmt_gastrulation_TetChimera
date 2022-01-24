@@ -159,10 +159,10 @@ slurm:  # memory in MB
         memory: 5000
         threads: 1
     calculate_tss_profiles: 
-        memory: 50000
+        memory: 25000
         threads: 1
     calculate_profiles_multiome_peaks: 
-        memory: 100000
+        memory: 90000
         threads: 1
     plot_tss_profiles: 
         memory: 10000

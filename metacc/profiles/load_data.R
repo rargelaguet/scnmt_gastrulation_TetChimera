@@ -8,11 +8,12 @@
 print("Loading methylation...")
 
 met_list <- list()
+# i <- "E8.5_oct20_plate3_A11_L003_CpG"
 for (i in opts$met.cells) {
   print(i)
   # met_list[[i]] <- fread(sprintf("%s/%s.tsv.gz",io$met_data_raw,i), select = c(1,2,3,4), colClasses = c("chr"="factor", "start"="integer", "end"="integer", "rate"="numeric")) %>% 
   met_list[[i]] <- fread(sprintf("%s/%s.tsv.gz",io$met_data_raw,i), colClasses = c("chr"="factor", "pos"="integer", "rate"="numeric")) %>% 
-    .[,id_met:=as.factor(i)] %>% 
+    .[,id_met:=i] %>%  # .[,id_met:=factor(i)] %>% 
     .[,c("start","end"):=pos] %>%
     setkey("chr","start","end") %>%
     .[,bp:=start] %>%
@@ -23,7 +24,7 @@ for (i in opts$met.cells) {
     .[,list(rate=100*mean(rate), N=.N),by=.(id_met,id,dist,anno)]
 }
 met.dt <- rbindlist(met_list) %>%
-  .[,c("id_met","id","context"):=list(as.factor(id_met),as.factor(id),as.factor("CG"))]
+  .[,c("id","context"):=list(as.factor(id),as.factor("CG"))]
   
 rm(met_list)
 
@@ -41,7 +42,7 @@ for (i in opts$acc.cells) {
   print(i)
   # acc_list[[i]] <- fread(sprintf("%s/%s.tsv.gz",io$acc_data_raw,i), select = c(1,2,3,4), colClasses = c("chr"="factor", "start"="integer", "end"="integer", "rate"="numeric")) %>% 
   acc_list[[i]] <- fread(sprintf("%s/%s.tsv.gz",io$acc_data_raw,i), colClasses = c("chr"="factor", "pos"="integer", "rate"="numeric")) %>% 
-    .[,id_acc:=as.factor(i)] %>% 
+    .[,id_acc:=i] %>% # .[,id_acc:=as.factor(i)] %>% 
     .[,c("start","end"):=pos] %>%
     setkey("chr","start","end") %>%
     .[,bp:=start] %>%
@@ -52,7 +53,7 @@ for (i in opts$acc.cells) {
     .[,list(rate=100*mean(rate), N=.N),by=.(id_acc,id,dist,anno)]
 }
 acc.dt <- rbindlist(acc_list) %>%
-  .[,c("id_acc","id","context"):=list(as.factor(id_acc),as.factor(id),as.factor("GC"))]
+  .[,c("id","context"):=list(as.factor(id),as.factor("GC"))]
   
 rm(acc_list)
 

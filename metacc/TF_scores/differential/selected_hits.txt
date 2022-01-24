@@ -1,0 +1,12 @@
+Selected TFs:
+
+GATA1
+TAL1
+RUNX1
+
+
+TAL1 binding site
+chr13:37,657,525-37,675,689
+
+TAL1 binding site
+chr8:121,311,263-121,321,022
