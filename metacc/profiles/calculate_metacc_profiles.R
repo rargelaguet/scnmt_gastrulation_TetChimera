@@ -32,8 +32,8 @@ args <- p$parse_args(commandArgs(TRUE))
 # args$window_size <- 1500
 # args$met_tile <- 150
 # args$acc_tile <- 75
-# args$outfile  <- file.path(io$basedir,sprintf("results_new/metacc/profiles/%s/precomputed_metacc_%s.txt.gz",args$anno,args$anno))
-# args$test <- FALSE
+# args$outfile  <- file.path(io$basedir,sprintf("results_new/metacc/profiles/%s/precomputed_metacc_%s_v2.txt.gz",args$anno,args$anno))
+# args$test <- TRUE
 ## END TEST ##
 
 # I/O
@@ -73,13 +73,21 @@ source(here::here("metacc/profiles/load_annotations.R"))
 # Load met/acc data
 source(here::here("metacc/profiles/load_data.R"))
 
+
 ###########
 ## Merge ##
 ###########
 
 # Merge data with sample metadata
+print(sprintf("DNA methylation, number of cells before merging: %s",length(unique(met.dt$id_met))))
 met.dt <- met.dt %>% merge(sample_metadata[,c("cell","id_met")], by="id_met") %>% droplevels()
+print(sprintf("DNA methylation, number of cells after merging: %s",length(unique(met.dt$cell))))
+print(sprintf("Cells not present in the DNA methylation data: %s",paste(opts$met.cells[!opts$met.cells%in%unique(met.dt$id_met)], collapse=" ")))
+
+print(sprintf("Chromatin accessibility, number of cells before merging: %s",length(unique(acc.dt$id_acc))))
 acc.dt <- acc.dt %>% merge(sample_metadata[,c("cell","id_acc")], by="id_acc") %>% droplevels()
+print(sprintf("Chromatin accessibility, number of cells after merging: %s",length(unique(acc.dt$cell))))
+print(sprintf("Cells not present in the chromatin accessibility data: %s",paste(opts$acc.cells[!opts$acc.cells%in%unique(acc.dt$id_acc)], collapse=" ")))
 
 # Concatenate DNA methylation and chromatin acessibility data
 metacc.dt <- rbind(
@@ -87,7 +95,6 @@ metacc.dt <- rbind(
   acc.dt[,c("cell","id","anno","dist","rate","N","context")]
 )
 
-# TO-DO: TAKE INTO ACCOUNT STRAND INFO
 
 ##########
 ## Save ##

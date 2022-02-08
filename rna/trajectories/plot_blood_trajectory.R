@@ -98,19 +98,43 @@ to.plot <- trajectory.dt %>%
   merge(sample_metadata.dt, by="id_rna") %>%
   merge(data.table(id_rna = colnames(sce), expr = logcounts(sce)["Hba-a1",]), by="id_rna")
 
-ggplot(to.plot, aes(x=PC1, y=expr)) +
+p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
   geom_point(aes(fill=celltype), size=2, shape=21, stroke=0.1) +
   stat_smooth(method="loess", color="black", alpha=0.75, span=0.5) +
   geom_rug(aes(color=celltype), sides="b") +
   scale_color_manual(values=opts$celltype.colors) +
   scale_fill_manual(values=opts$celltype.colors) +
   guides(fill="none", color="none") +
-  labs(x="Pseudotime", y="Gene expression") +
+  labs(x="Pseudotime", y="Hba-a1 expression") +
   theme_classic() +
   theme(
     axis.text.x = element_blank(),
+    axis.text.y = element_text(color="black"),
     axis.ticks.x = element_blank()
   )
+
+pdf(file.path(io$outdir,"trajectory_coloured_by_Hba_expr.pdf"), width=7, height=2.3)
+print(p)
+dev.off()
+
+p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
+  geom_point(aes(fill=class2), size=2, shape=21, stroke=0.1) +
+  stat_smooth(method="loess", color="black", alpha=0.75, span=0.5) +
+  geom_rug(aes(color=celltype), sides="b") +
+  scale_color_manual(values=opts$celltype.colors) +
+  scale_fill_manual(values=opts$class.colors) +
+  guides(color="none", fill="none") +
+  labs(x="Pseudotime", y="Hba-a1 expression") +
+  theme_classic() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(color="black"),
+    axis.ticks.x = element_blank()
+  )
+
+pdf(file.path(io$outdir,"trajectory_coloured_by_class.pdf"), width=7, height=2.3)
+print(p)
+dev.off()
 
 ##################################################
 ## Overlay gene expression over the 2D manifold ##
@@ -187,7 +211,7 @@ p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
   # geom_point(aes(fill=celltype), size=2, shape=21, stroke=0.1) +
   stat_smooth(aes(group=gene), method="loess", color="black", alpha=0.25, span=1) +
   geom_rug(aes(color=celltype), sides="b") +
-  facet_wrap(~gene_class, nrow=1) +
+  # facet_wrap(~gene_class, nrow=1) +
   coord_cartesian(ylim=c(0,8.5)) +
   ggrepel::geom_text_repel(aes_string(label="gene"), data=to.plot[,.SD[which.max(PC1)], by="gene"]) +
   scale_color_manual(values=opts$celltype.colors[unique(to.plot$celltype)]) +
@@ -196,13 +220,13 @@ p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
   labs(x="Pseudotime", y="Gene expression") +
   theme_classic() +
   theme(
-    legend.position = "right",
+    legend.position = "none",
     axis.text.x = element_blank(),
     axis.text.y = element_text(color="black"),
     axis.ticks.x = element_blank()
   )
 
-pdf(file.path(io$outdir,"pseudotime_coloured_by_dnmt_tet_expr.pdf"), width=9, height=4)
+pdf(file.path(io$outdir,"pseudotime_coloured_by_dnmt_tet_expr.pdf"), width=5, height=4)
 print(p)
 dev.off()
 
@@ -237,5 +261,27 @@ p <- ggplot(to.plot, aes(x=PC1, y=met_rate_imputed)) +
   )
 
 pdf(file.path(io$outdir,"pseudotime_coloured_by_global_met.pdf"), width=7, height=4)
+print(p)
+dev.off()
+
+to.plot %>% setorder(-class2)
+
+p <- ggplot(to.plot, aes(x=PC1, y=met_rate_imputed)) +
+  geom_point(aes(fill=class2), size=2, shape=21, stroke=0.15, alpha=1) +
+  stat_smooth(method="loess", color="black", alpha=0.30, span=1) +
+  geom_rug(aes(color=celltype), sides="b") +
+  scale_color_manual(values=opts$celltype.colors[unique(to.plot$celltype)]) +
+  scale_fill_manual(values=opts$class.colors) +
+  # guides(fill="none") +
+  labs(x="Pseudotime", y="Global DNA methylation (%)") +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(color="black"),
+    axis.ticks.x = element_blank()
+  )
+
+pdf(file.path(io$outdir,"pseudotime_coloured_by_global_met.pdf"), width=4, height=4.5)
 print(p)
 dev.off()

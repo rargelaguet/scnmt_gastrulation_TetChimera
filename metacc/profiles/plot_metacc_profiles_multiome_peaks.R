@@ -26,7 +26,7 @@ source(here::here("utils.R"))
 args <- list()
 args$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
 args$file  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks/precomputed_metacc_multiome_peaks.txt.gz")
-args$markers_file <- "/bi/group/reik/ricard/data/gastrulation_multiome_10x/results_new/atac/archR/differential/PeakMatrix/markers/marker_peaks_lenient.txt.gz"
+# args$markers_file <- "/bi/group/reik/ricard/data/gastrulation_multiome_10x/results/atac/archR/differential/PeakMatrix/markers/marker_peaks.txt.gz"
 # args$markers_file <- "/Users/argelagr/data/gastrulation_multiome_10x/results_new/atac/archR/differential/PeakMatrix/markers/marker_peaks_lenient.txt.gz"
 args$outdir  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks")
 ## END TEST ##
@@ -39,7 +39,8 @@ dir.create(file.path(args$outdir,"per_class"), showWarnings = F)
 opts$celltypes = c(
   "Surface_ectoderm",
   # "Gut",
-  # "Pharyngeal_mesoderm",
+  "Pharyngeal_mesoderm",
+  "ExE_mesoderm",
   "Endothelium",
   "Haematoendothelial_progenitors",
   "Blood_progenitors",
@@ -78,7 +79,7 @@ table(sample_metadata$celltype,sample_metadata$class)
 
 opts$min_marker_score <- 0.75
 
-marker_peaks.dt <- fread(args$markers_file) %>%
+marker_peaks.dt <- fread(io$multiome.marker_peaks) %>%
   .[,celltype:=stringr::str_replace_all(celltype,opts$rename.celltypes)] %>%
   .[celltype%in%opts$celltypes] %>%
   .[score>=opts$min_marker_score] %>%
@@ -88,7 +89,7 @@ marker_peaks.dt <- fread(args$markers_file) %>%
 table(marker_peaks.dt$celltype)
 
 ###########################
-## Load precomputed data ##
+## Load precomputed data ## 
 ###########################
 
 if (file.exists(file.path(args$outdir,"precomputed_metacc_multiome_peaks_filt.txt.gz"))) {
@@ -97,8 +98,13 @@ if (file.exists(file.path(args$outdir,"precomputed_metacc_multiome_peaks_filt.tx
 } else {
   metacc.dt <- fread(args$file) %>% 
     .[cell%in%sample_metadata$cell & id%in%unique(marker_peaks.dt$idx)]
-  fwrite(metacc.dt, file.path(args$outdir,"precomputed_metacc_multiome_peaks_filt.txt.gz"))
+  fwrite(metacc.dt, file.path(args$outdir,"precomputed_metacc_multiome_peaks_filt_v2.txt.gz"))
 }
+
+# foo <- metacc.dt %>% .[cell%in%sample_metadata$cell & id%in%unique(marker_peaks.dt$idx)]
+# stopifnot(sample_metadata$cell%in%unique(metacc.dt$cell))
+# stopifnot(sample_metadata$cell%in%unique(metacc.dt$cell))
+# sample_metadata[!cell%in%unique(metacc.dt$cell),c("cell","id_met","id_acc")]
 
 ###########################################
 ## Plot TSS profiles one class at a time ##

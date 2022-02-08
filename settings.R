@@ -71,6 +71,7 @@ io$acc.diff <- paste0(io$basedir,"/acc/results/differential/feature_level/lineag
 io$multiome.metadata <- paste0(io$multiome.basedir,"/sample_metadata.txt.gz")
 io$multiome.differential <- paste0(io$multiome.basedir,"/results/differential")
 io$multiome.sce <- paste0(io$multiome.basedir,"/processed/SingleCellExperiment.rds")
+io$multiome.marker_peaks <- paste0(io$multiome.basedir,"/results/atac/archR/differential/PeakMatrix/markers/marker_peaks.txt.gz")  # this needs to be updated
 
 # PijuanSala2019 information
 io$atlas.metadata <- paste0(io$atlas.basedir,"/sample_metadata.txt.gz")
@@ -218,3 +219,5 @@ opts$samples <- c(
 opts$chr <- paste0("chr",c(1:19,"X","Y"))
 
 opts$context.colors <- c("CG"="#F8766D", "GC"="#00BFC4")
+
+opts$class.colors <- c("WT" = "#4F94CD", "Tet-TKO" = "#EE4000", "TET-TKO" = "#EE4000")

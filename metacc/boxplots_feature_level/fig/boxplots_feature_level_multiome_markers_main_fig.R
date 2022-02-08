@@ -16,7 +16,7 @@ dir.create(io$outdir, showWarnings = F)
 opts$min_observations <- 50
 opts$min_cells <- 10
 opts$min_marker_score <- 0.75
-opts$annos <- c("prom_2000_2000","multiome_peaks")
+opts$annos <- c("prom_2000_2000","LTR","CGI","multiome_peaks")
 
 ###################
 ## Load metadata ##
@@ -89,7 +89,7 @@ global_rates.dt <- sample_metadata[,c("cell","met_rate","acc_rate")] %>%
 markers.to.plot <- c("Erythroid2","Surface_ectoderm")
 celltype.to.plot <- "late_Erythroid"
 
-anno.order <- c("prom_2000_2000","Erythroid2","Surface_ectoderm")
+anno.order <- c("prom_2000_2000","CGI","LTR","Erythroid2","Surface_ectoderm")
 
 to.plot <- rbind(
   metacc.dt[anno!="multiome_peaks"],
@@ -110,7 +110,7 @@ p.met <- ggplot(to.plot[context=="CG"], aes(x = class, y = rate_norm, fill=class
   geom_hline(yintercept=1, linetype="dashed") +
   labs(x="", y="Methylation levels\n(relative to background)") +
   stat_compare_means(comparisons = list(c("WT", "TET-TKO")), aes(label = paste0("p = ", ..p.format..)), size=3, method="t.test") +
-  # scale_fill_manual(values=opts$context.colors) +
+  scale_fill_manual(values=opts$class.colors) +
   # coord_cartesian(ylim=c(0,100)) +
   theme_classic() +
   theme(
@@ -125,6 +125,9 @@ p.met <- ggplot(to.plot[context=="CG"], aes(x = class, y = rate_norm, fill=class
     axis.ticks.x = element_blank()
   )
 
+to.plot[context=="GC" & rate_norm>=2.5,rate_norm:=2.5] # for viz purposes
+to.plot[context=="GC" & rate_norm<=0.70,rate_norm:=0.70] # for viz purposes
+
 p.acc <- ggplot(to.plot[context=="GC"], aes(x = class, y = rate_norm, fill=class)) +
   geom_boxplot(outlier.shape=NA, coef=1) +
   geom_point(position = position_jitterdodge(jitter.width = 0.35), size = 1.15, alpha = 0.50, shape=21) +
@@ -132,12 +135,12 @@ p.acc <- ggplot(to.plot[context=="GC"], aes(x = class, y = rate_norm, fill=class
   labs(x="", y="Chr. accessibility levels\n(relative to background)") +
   geom_hline(yintercept=1, linetype="dashed") +
   stat_compare_means(comparisons = list(c("WT", "TET-TKO")), aes(label = paste0("p = ", ..p.format..)), size=3, method="t.test") +
-  # scale_fill_manual(values=opts$context.colors) +
+  scale_fill_manual(values=opts$class.colors) +
   # coord_cartesian(ylim=c(8,60)) +
   theme_classic() +
   theme(
     strip.background = element_blank(),
-    legend.position = "none",
+    legend.position = "right",
     legend.title = element_blank(),
     # axis.text = element_text(color="black"),
     # axis.text.x = element_blank(),
@@ -147,8 +150,8 @@ p.acc <- ggplot(to.plot[context=="GC"], aes(x = class, y = rate_norm, fill=class
     axis.ticks.x = element_blank()
   )
 
-pdf(file.path(io$outdir,"boxplots_metacc_fig.pdf"), width=5, height=5)
-print(cowplot::plot_grid(plotlist=list(p.met,p.acc), nrow = 1))
+pdf(file.path(io$outdir,"boxplots_metacc_fig_legend.pdf"), width=6, height=5)
+print(cowplot::plot_grid(plotlist=list(p.met,p.acc), nrow = 2))
 dev.off()
 
 

@@ -24,7 +24,6 @@ source(here::here("utils.R"))
 
 # I/O
 io$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
-io$markers_file <- "/Users/argelagr/data/gastrulation_multiome_10x/results_new/atac/archR/differential/PeakMatrix/markers/marker_peaks_lenient.txt.gz"
 io$outdir <- file.path(io$basedir,"results_new/metacc/profiles/fig")
 dir.create(io$outdir, showWarnings = F)
 
@@ -38,7 +37,7 @@ dir.create(io$outdir, showWarnings = F)
 #   # "Blood_progenitors",
 #   "Erythroid"
 # )
-opts$celltypes <- c("Surface_ectoderm","ExE_mesoderm","Haematoendothelial_progenitors","Erythroid")
+opts$celltypes <- c("Surface_ectoderm","Haematoendothelial_progenitors","Erythroid")
 
 opts$rename.celltypes <- c(
   "Erythroid1" = "Erythroid",
@@ -54,7 +53,8 @@ opts$rename.celltypes <- c(
   "Allantois" = "ExE_mesoderm"
 )
 
-opts$markers.to.plot <- c("Surface_ectoderm","ExE_mesoderm","Haematoendothelial_progenitors","Erythroid")
+# opts$markers.to.plot <- c("Surface_ectoderm","ExE_mesoderm","Haematoendothelial_progenitors","Erythroid")
+opts$markers.to.plot <- c("Surface_ectoderm","Haematoendothelial_progenitors","Erythroid")
 
 ###################
 ## Load metadata ##
@@ -76,12 +76,13 @@ table(sample_metadata$celltype,sample_metadata$class)
 
 opts$min_marker_score <- 0.75
 
-marker_peaks.dt <- fread(io$markers_file) %>%
+marker_peaks.dt <- fread(io$multiome.marker_peaks) %>%
   .[,celltype:=stringr::str_replace_all(celltype,opts$rename.celltypes)] %>%
   .[celltype%in%opts$markers.to.plot] %>%
   # .[celltype%in%opts$celltypes] %>%
   .[score>=opts$min_marker_score] %>%
-  .[,.(score=mean(score)), by=c("celltype","idx")]
+  .[,.(score=mean(score)), by=c("celltype","idx")] %>%
+  .[,idx:=gsub("chr","",idx)]
 
 table(marker_peaks.dt$celltype)
 
@@ -93,16 +94,21 @@ io$precomputed_metacc_profiles  <- file.path(io$basedir,"results_new/metacc/prof
 metacc_promoters.dt <- fread(io$precomputed_metacc_profiles) %>% .[cell%in%sample_metadata$cell]
 
 stopifnot(sample_metadata$cell%in%unique(metacc_promoters.dt$cell))
+sample_metadata[!cell%in%unique(metacc_promoters.dt$cell),c("cell","id_met","id_acc")]
 
 #################################
 ## Load Multiome peak profiles ##
 #################################
 
-io$precomputed_metacc_profiles  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks/first_trial/precomputed_metacc_multiome_peaks_filt.txt.gz")
+io$precomputed_metacc_profiles  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks/precomputed_metacc_multiome_peaks_filt.txt.gz")
+# io$precomputed_metacc_profiles  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks/first_trial/precomputed_metacc_multiome_peaks_filt.txt.gz")
 metacc_multiome.dt <- fread(io$precomputed_metacc_profiles) %>%
   .[cell%in%sample_metadata$cell & id%in%unique(marker_peaks.dt$idx)]
 
-stopifnot(sample_metadata$cell%in%unique(metacc_multiome.dt$cell))
+# Sanity checks
+# metacc_multiome.dt[,.N,by=c("cell","context")] %>% View
+# stopifnot(sample_metadata$cell%in%unique(metacc_multiome.dt$cell))
+# sample_metadata[!cell%in%unique(metacc_multiome.dt$cell),c("cell","id_met","id_acc")]
 
 metacc_multiome.dt <- metacc_multiome.dt %>%
   merge(marker_peaks.dt[,c("celltype","idx")] %>% setnames(c("celltype_marker","id")), by="id", allow.cartesian=T) %>%
@@ -116,12 +122,11 @@ metacc.dt <- rbind(metacc_promoters.dt,metacc_multiome.dt)
 
 # rm(metacc_promoters.dt,metacc_multiome.dt)
 
-
 ###########################################
 ## Plot TSS profiles one class at a time ##
 ###########################################
 
-i <- "ExE_mesoderm"
+# i <- "ExE_mesoderm"
 
 for (i in opts$celltypes) {
   
@@ -137,6 +142,9 @@ for (i in opts$celltypes) {
   to.plot <- rbind(to.plot.met,to.plot.acc) %>% 
     merge(sample_metadata[,c("cell","class")]) %>%
     .[,anno:=factor(anno,levels=c("prom_200_200",opts$markers.to.plot))]
+    
+  # fILTER OUT CELLS WITH SMALL N
+  to.plot <- to.plot[N>=15]
   
   # anno.order <- c("prom_200_200","Erythroid","Surface_ectoderm")
   
@@ -150,7 +158,7 @@ for (i in opts$celltypes) {
     facet_wrap(~class~anno, scales="fixed", nrow=2) +
     geom_hline(aes(yintercept=rate, color=context), linetype="dashed", alpha=0.75, size=0.75, data=to.plot.lines) +
     labs(x="Distance from center (bp)", y="Met/Acc levels (%)") +
-    coord_cartesian(ylim=c(0,90)) +
+    coord_cartesian(ylim=c(12,90)) +
     # scale_x_continuous(breaks=c(-1,0,1)) +
     # xlim(-opts$window_size, opts$window_size) +
     guides(fill="none", color="none", linetype="none") +
@@ -160,7 +168,7 @@ for (i in opts$celltypes) {
       axis.text.y = element_text(size=rel(1.1), colour="black")
     )
   
-  pdf(file.path(io$outdir,sprintf("metacc_profiles_%s_fig.pdf",i)), width=8, height=6)
+  pdf(file.path(io$outdir,sprintf("metacc_profiles_%s_fig.pdf",i)), width=8, height=5)
   print(p)
   dev.off()
 }
