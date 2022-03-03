@@ -198,8 +198,11 @@ dev.off()
 ## Overlay gene expression over the 1D pseudotime ##
 ####################################################
 
-genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3")
+# genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3")
+genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3","Uhrf1")
 
+tmp <- to.plot %>% setorder(-PC1) %>% .[,.SD[1:100],by="gene"] %>% .[,.(PC1=max(PC1), expr=mean(expr)),by="gene"]
+               
 to.plot <- data.table(as.matrix(logcounts(sce)[genes.to.plot,]), keep.rownames = T) %>%
   setnames("rn","gene") %>%
   melt(id.vars="gene", variable.name="id_rna", value.name="expr") %>%
@@ -213,7 +216,7 @@ p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
   geom_rug(aes(color=celltype), sides="b") +
   # facet_wrap(~gene_class, nrow=1) +
   coord_cartesian(ylim=c(0,8.5)) +
-  ggrepel::geom_text_repel(aes_string(label="gene"), data=to.plot[,.SD[which.max(PC1)], by="gene"]) +
+  ggrepel::geom_text_repel(aes_string(label="gene"), data=tmp) +
   scale_color_manual(values=opts$celltype.colors[unique(to.plot$celltype)]) +
   # scale_fill_manual(values=opts$celltype.colors) +
   # guides(fill="none") +

@@ -25,7 +25,8 @@ io$metadata <- file.path(io$basedir,"results/metacc/qc/sample_metadata_after_met
 io$outdir <- file.path(io$basedir,"results/metacc/profiles/supp_fig"); dir.create(io$outdir, showWarnings = F)
 
 # Options
-opts$celltypes <- c("Surface_ectoderm","Haematoendothelial_progenitors","Blood_progenitors","Endothelium","Pharyngeal_mesoderm")
+# opts$celltypes <- c("Surface_ectoderm","Haematoendothelial_progenitors","Blood_progenitors","Endothelium","Pharyngeal_mesoderm","ExE_mesoderm")
+opts$celltypes <- c("Surface_ectoderm","Pharyngeal_mesoderm","ExE_mesoderm")
 
 opts$rename.celltypes <- c(
   "Erythroid1" = "Erythroid",
@@ -41,7 +42,8 @@ opts$rename.celltypes <- c(
   "Allantois" = "ExE_mesoderm"
 )
 
-opts$markers.to.plot <- c("Surface_ectoderm","Haematoendothelial_progenitors","Blood_progenitors","Endothelium","Pharyngeal_mesoderm")
+# opts$markers.to.plot <- c("Surface_ectoderm","Haematoendothelial_progenitors","Blood_progenitors","Endothelium","Pharyngeal_mesoderm","ExE_mesoderm")
+opts$markers.to.plot <- c("Surface_ectoderm","Pharyngeal_mesoderm","ExE_mesoderm")
 
 ###################
 ## Load metadata ##
@@ -87,7 +89,7 @@ sample_metadata[!cell%in%unique(metacc_promoters.dt$cell),c("cell","id_met","id_
 ## Load Multiome peak profiles ##
 #################################
 
-io$precomputed_metacc_profiles  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks/precomputed_metacc_multiome_peaks_filt.txt.gz")
+io$precomputed_metacc_profiles  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks/precomputed_metacc_multiome_peaks_filt_v2.txt.gz")
 # io$precomputed_metacc_profiles  <- file.path(io$basedir,"results_new/metacc/profiles/multiome_peaks/first_trial/precomputed_metacc_multiome_peaks_filt.txt.gz")
 metacc_multiome.dt <- fread(io$precomputed_metacc_profiles) %>%
   .[cell%in%sample_metadata$cell & id%in%unique(marker_peaks.dt$idx)]
@@ -107,6 +109,7 @@ metacc_multiome.dt <- metacc_multiome.dt %>%
 
 metacc.dt <- rbind(metacc_promoters.dt,metacc_multiome.dt)
 
+# metacc.dt[,c("id","anno")] %>% unique %>% .[,.N,by="anno"]
 # rm(metacc_promoters.dt,metacc_multiome.dt)
 
 ###########################################

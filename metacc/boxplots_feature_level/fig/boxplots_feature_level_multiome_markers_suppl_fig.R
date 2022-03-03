@@ -9,17 +9,16 @@ source(here::here("utils.R"))
 
 # I/O
 io$metadata <- file.path(io$basedir,"results_new/metacc/qc/sample_metadata_after_metacc_qc.txt.gz")
-io$outdir  <- file.path(io$basedir,"results_new/metacc/boxplots_feature_level/fig")
-dir.create(io$outdir, showWarnings = F)
+io$outdir  <- file.path(io$basedir,"results_new/metacc/boxplots_feature_level/supp_fig"); dir.create(io$outdir, showWarnings = F)
 
 # Options
 opts$min_observations <- 50
 opts$min_cells <- 10
-opts$min_marker_score <- 0.90
+opts$min_marker_score <- 0.75
 opts$annos <- c("prom_2000_2000","multiome_peaks")
 
-# opts$celltypes <- c("Surface_ectoderm","ExE_mesoderm","Endothelium","Haematoendothelial_progenitors","Blood_progenitors","early_Erythroid","late_Erythroid")
-opts$celltypes <- c("Surface_ectoderm","ExE_mesoderm","Haematoendothelial_progenitors","late_Erythroid")
+# opts$celltypes <- c("Surface_ectoderm","Haematoendothelial_progenitors","Blood_progenitors","Endothelium","Pharyngeal_mesoderm","ExE_mesoderm")
+opts$celltypes <- c("Surface_ectoderm","Pharyngeal_mesoderm","ExE_mesoderm")
 
 opts$rename.celltypes <- c(
   "Erythroid1" = "Erythroid",
@@ -35,8 +34,8 @@ opts$rename.celltypes <- c(
   "Allantois" = "ExE_mesoderm"
 )
 
-# opts$markers.to.plot <- c("Surface_ectoderm","ExE_mesoderm","Endothelium","Haematoendothelial_progenitors","Blood_progenitors","Erythroid")
-opts$markers.to.plot <- c("Surface_ectoderm","ExE_mesoderm","Haematoendothelial_progenitors","Erythroid")
+# opts$markers.to.plot <- c("Surface_ectoderm","Haematoendothelial_progenitors","Blood_progenitors","Endothelium","Pharyngeal_mesoderm","ExE_mesoderm")
+opts$markers.to.plot <- c("Surface_ectoderm","Pharyngeal_mesoderm","ExE_mesoderm")
 
 ###################
 ## Load metadata ##
@@ -49,9 +48,11 @@ sample_metadata <- fread(io$metadata) %>%
 opts$met_cells <- sample_metadata[pass_metQC==TRUE,id_met]
 opts$acc_cells <- sample_metadata[pass_accQC==TRUE,id_acc]
 
-# table(sample_metadata$celltype.mapped,sample_metadata$class)
+
+table(sample_metadata$celltype.mapped,sample_metadata$class)
 # sample_metadata[celltype.mapped=="late_Erythroid",celltype.mapped:="Erythroid"]
 
+tmp <- sample_metadata[,sum(pass_metQC,na.rm=T), by=c("celltype.mapped","class")]
 #######################
 ## Load marker peaks ##
 #######################
@@ -65,7 +66,7 @@ marker_peaks.dt <- fread(io$markers_file) %>%
   .[score>=opts$min_marker_score] %>%
   .[,.(score=mean(score)), by=c("celltype","idx")]
 
-marker_peaks.dt
+table(marker_peaks.dt$celltype)
 
 #######################
 ## Load met/acc data ##
@@ -180,7 +181,7 @@ for (i in opts$celltypes) {
       axis.ticks.x = element_blank()
     )
   
-  pdf(file.path(io$outdir,sprintf("boxplots_metacc_fig_%s.pdf",i)), width=5, height=5)
+  pdf(file.path(io$outdir,sprintf("boxplots_metacc_fig_%s.pdf",i)), width=8, height=5)
   print(cowplot::plot_grid(plotlist=list(p.met,p.acc), nrow = 2))
   dev.off()
 }

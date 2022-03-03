@@ -113,6 +113,14 @@ for (i in classes.to.plot) {
 ## Plot WT and KO together ##
 #############################
 
+# Dot size
+opts$size.mapped <- 0.60
+opts$size.nomapped <- 0.1
+
+# Transparency
+opts$alpha.mapped <- 0.85
+opts$alpha.nomapped <- 0.35
+
 # Subsample query cells to have the same N per class
 # sample_metadata_subset <- sample_metadata %>% .[,.SD[sample.int(n=.N, size=4500)], by=c("stage","class2")]
 
@@ -125,10 +133,10 @@ to.plot <- meta_atlas %>% copy %>%
   .[,mapped:=factor(mapped.wt + mapped.ko, levels=c("0","-10","10"))] %>%
   .[,mapped:=plyr::mapvalues(mapped, from = c("0","-10","10"), to = c("Atlas","WT","Tet-TKO"))] %>% setorder(mapped)
 
-p <- plot.dimred.wtko(to.plot, wt.label = "WT", ko.label = "Tet-TKO", nomapped.label = "Atlas") +
+p <- plot.dimred.wtko(to.plot, wt.label = "Tet-TKO", ko.label = "WT", nomapped.label = "Atlas") +
   theme(legend.position = "top", axis.line = element_blank())
 
-pdf(sprintf("%s/per_class/umap_mapped_WT_and_KO.pdf",args$outdir), width=5.5, height=6.5)
+pdf(sprintf("%s/per_class/umap_mapped_WT_and_KO.pdf",args$outdir), width=5, height=6)
 print(p)
 dev.off()
 

@@ -1,6 +1,7 @@
 here::here("metacc/profiles/calculate_metacc_profiles.R")
 
-suppressMessages(library(argparse))
+source(here::here("settings.R"))
+source(here::here("utils.R"))
 
 ######################
 ## Define arguments ##
@@ -18,9 +19,6 @@ args <- p$parse_args(commandArgs(TRUE))
 ###################
 ## Load settings ##
 ###################
-
-source(here::here("settings.R"))
-source(here::here("utils.R"))
 
 ## START TEST ##
 args <- list()
@@ -61,7 +59,6 @@ opts$rename.celltypes <- c(
   "Allantois" = "ExE_mesoderm"
 )
 
-
 ###################
 ## Load metadata ##
 ###################
@@ -98,7 +95,7 @@ if (file.exists(file.path(args$outdir,"precomputed_metacc_multiome_peaks_filt.tx
 } else {
   metacc.dt <- fread(args$file) %>% 
     .[cell%in%sample_metadata$cell & id%in%unique(marker_peaks.dt$idx)]
-  fwrite(metacc.dt, file.path(args$outdir,"precomputed_metacc_multiome_peaks_filt_v2.txt.gz"))
+  fwrite(metacc.dt, file.path(args$outdir,"precomputed_metacc_multiome_peaks_filt.txt.gz"))
 }
 
 # foo <- metacc.dt %>% .[cell%in%sample_metadata$cell & id%in%unique(marker_peaks.dt$idx)]

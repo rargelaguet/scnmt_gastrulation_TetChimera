@@ -13,8 +13,11 @@ dir.create(io$outdir, showWarnings=F)
 ###################
 
 sample_metadata <- fread(io$metadata) %>%
-  .[,ko:=ifelse(grepl("KO",class),"Tet-TKO","WT")] %>%
-  .[,ko:=factor(ko,levels=c("WT","Tet-TKO"))]
+  .[,ko:=ifelse(grepl("KO",class),"Tet-TKO","WT")] %>% .[,ko:=factor(ko,levels=c("WT","Tet-TKO"))]
+
+# tmp <- sample_metadata[celltype.mapped%in%c("early_Erythroid","late_Erythroid")]
+# tmp <- sample_metadata[celltype.mapped%in%c("early_Erythroid","late_Erythroid","Blood_progenitors","Haematoendothelial_progenitors")]
+# tmp[,sum(pass_rnaQC,na.rm=T),by="ko"]
 
 ###################################################
 ## Number of cells with multi-omics measurements ##

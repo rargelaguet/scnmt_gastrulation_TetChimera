@@ -9,7 +9,7 @@ source(here::here("utils.R"))
 #####################
 
 # I/O
-io$outdir <- file.path(io$basedir,"results_new/metacc/TF_scores/differentialpdf"); dir.create(args$outdir, showWarnings=F)
+io$outdir <- file.path(io$basedir,"results_new/metacc/TF_scores/differential/pdf"); dir.create(args$outdir, showWarnings=F)
 
 # Options
 
