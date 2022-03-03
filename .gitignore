@@ -14,7 +14,7 @@
 *.tiff
 *.ai
 *.svg
-*.png
+# *.png
 
 # Data files
 *.hdf5
