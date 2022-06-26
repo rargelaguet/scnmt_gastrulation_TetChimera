@@ -1,0 +1,4 @@
+outdir="/Users/argelagr/data/tet_chimera_nmtseq/results/metaccrna/individual_features"
+Rscript plot_individual_features.R --rna_gene Inpp5d --met_feature chr1:87640323-87640923 --met_context multiome_peaks --acc_feature chr1:87640323-87640923 --acc_context multiome_peaks --celltypes Endothelium Blood_progenitors Erythroids --outdir $outdir
+Rscript plot_individual_features.R --rna_gene Lhx9 --met_feature chr1:138841509-138842109 --met_context multiome_peaks --acc_feature chr1:138841509-138842109 --acc_context multiome_peaks --celltypes Endothelium Blood_progenitors Erythroids --outdir $outdir
+Rscript plot_individual_features.R --rna_gene Ttc39b --met_feature chr4:83273521-83274121 --met_context multiome_peaks --acc_feature chr4:83273521-83274121 --acc_context multiome_peaks --celltypes Endothelium Blood_progenitors Erythroids --outdir $outdir

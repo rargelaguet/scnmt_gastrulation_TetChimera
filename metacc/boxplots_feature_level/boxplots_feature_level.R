@@ -1,9 +1,7 @@
 here::here("metacc/boxplots_feature_level/boxplots_feature_level.R")
 
-# Load default settings
 source(here::here("settings.R"))
 source(here::here("utils.R"))
-
 
 ######################
 ## Define arguments ##

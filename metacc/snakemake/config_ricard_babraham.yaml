@@ -100,7 +100,7 @@ params:
         max_rate: 40
     pseudobulk:
         # group_by: ["sample","celltype_class"]
-        group_by: ["celltype_class"]
+        group_by: ["celltype,"celltype_class"]
         min_cells: 10
     calculate_tss_profiles:
         window_size: 3000

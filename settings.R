@@ -45,7 +45,7 @@ io$features.dir <- paste0(io$basedir, "/features/genomic_contexts")
 
 # RNA
 # io$rna.sce <- paste0(io$basedir,"/rna/SingleCellExperiment.rds")
-io$rna.sce <- paste0(io$basedir,"/processed/rna_new/SingleCellExperiment.rds")
+io$rna.sce <- paste0(io$basedir,"/processed/rna/SingleCellExperiment.rds")
 # io$rna.counts <- paste0(io$basedir,"/rna/counts.tsv.gz")
 # io$rna.diff <- paste0(io$basedir,"/rna/results/differential/lineages")
 # io$rna.stats <- paste0(io$basedir,"/rna/results/stats/rna_stats.txt.gz")

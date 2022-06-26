@@ -1,0 +1,16 @@
+ATAC peak:  chr1:138841509-138842109
+Zoom out region: chr1:138,819,119-138,864,430
+Gene: Lhx9
+
+
+ATAC peak:  chr1:87640323-87640923
+Zoom out region: chr1:87,609,638-87,668,949
+Gene: Inpp5d
+
+
+ATAC peak:  chr4:83273521-83274121
+Zoom out region: chr4:83,262,304-83,286,048
+Gene: Ttc39b
+
+
+
