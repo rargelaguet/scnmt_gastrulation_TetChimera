@@ -110,3 +110,8 @@ p <- ggplot(to.plot, aes(x=rate, y=log10(N), fill=pass_QC)) +
 pdf(file.path(io$outdir,sprintf("%s_qc_metrics_scatterplot.pdf",opts$context)), width=6, height=6)
 print(p)
 dev.off()
+
+
+################################
+## Bisulfite conversion rates ##
+################################
