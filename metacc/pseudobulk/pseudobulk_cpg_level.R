@@ -133,4 +133,4 @@ for (i in unique(sample_metadata[[args$group_by]])) {
 
 tmp <- table(sample_metadata[[args$group_by]])
 to_save.dt <- data.table(group=names(tmp), N=tmp)
-fwrite(to_save.dt, file=file.path(args$outdir,"stats.txt"), quote=F, col.names=T, sep="\t")
+fwrite(to_save.dt, file=file.path(args$outdir,"pseudobulk_stats.txt"), quote=F, col.names=T, sep="\t")

@@ -39,8 +39,8 @@ rule all:
         expand(config["directories"]["results"]+"/metacc/boxplots_feature_level/boxplots_metacc_{genomic_context}.pdf", genomic_context=config["genomic_contexts"]),
         # expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
         # expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/completed.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
-        expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        expand(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/pseudobulk_stats.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
+        expand(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/pseudobulk_stats.txt", pseudobulk_group_by=config["params"]["pseudobulk"]["group_by"]),
         config["directories"]["results"]+"/metacc/profiles/tss/precomputed_metacc_prom_200_200.txt.gz",
         config["directories"]["results"]+"/metacc/profiles/multiome_peaks/precomputed_metacc_multiome_peaks.txt.gz",
         # config["directories"]["results"]+"/metacc/tss_profiles/pdf/CG_ratio_vs_GC_ratio_coloured_by_nCG.pdf",
@@ -366,8 +366,7 @@ rule pseudobulk_met:
         featuresdir = config["directories"]["features"],
         metadata = rules.qc_met.output
     output:
-        directory(config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}")
-        # config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/completed.txt"
+        config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}/pseudobulk_stats.txt"
     params:
         outdir = config["directories"]["processed_data"]+"/met/cpg_level/pseudobulk/{pseudobulk_group_by}",
         # group_by = config["params"]["pseudobulk"]["group_by"],
@@ -391,8 +390,7 @@ rule pseudobulk_acc:
         featuresdir = config["directories"]["features"],
         metadata = rules.qc_acc.output
     output:
-        directory(config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}")
-        # config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/completed.txt"
+        config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}/pseudobulk_stats.txt"
     params:
         outdir = config["directories"]["processed_data"]+"/acc/gpc_level/pseudobulk/{pseudobulk_group_by}",
         # group_by = config["params"]["pseudobulk"]["group_by"],
