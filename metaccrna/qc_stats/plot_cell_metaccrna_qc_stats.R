@@ -34,3 +34,25 @@ p <- venn.diagram(
 pdf(file.path(io$outdir,"venn_metaccrna_cell_numbers.pdf"))
 grid.draw(p)
 dev.off()
+
+#############################################
+## Correlate RNA and epigenetic QC metrics ##
+#############################################
+
+to.plot <- cell_metadata.dt#[,c("cell","method","nFeature_RNA","nCount_RNA","nCG","nGC")]
+
+p <- ggscatter(to.plot, x="nCG", y="nFeature_RNA", color="pass_rnaQC",
+               add="reg.line", add.params = list(color="black", fill="lightgray"), conf.int=TRUE) +
+  # scale_fill_manual(values=opts$celltype.colors) +
+  stat_cor(method = "pearson") +
+  # facet_wrap(~class, scales="fixed") +
+  theme_classic() +
+  labs(y="", x="") +
+  theme(
+    legend.position = "none",
+    axis.text = element_text(color="black", size=rel(0.90))
+  )
+
+pdf(file.path(io$outdir,"scatterplot_diff_proportions.pdf"), width=8.5, height=5)
+print(p)
+dev.off()
