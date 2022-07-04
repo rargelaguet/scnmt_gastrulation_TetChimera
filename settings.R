@@ -18,6 +18,7 @@ if (grepl("ricard",Sys.info()['nodename'])) {
 } else if (grepl("rargelaguet.local",Sys.info()['nodename'])) {
   io$basedir <- "/Users/rargelaguet/data/scnmt_gastrulation_TetChimera"
   io$atlas.basedir <- "/Users/rargelaguet/data/gastrulation10x"
+  io$multiome.basedir <- "/Users/rargelaguet/data/gastrulation_multiome_10x"
 } else if (grepl("ebi",Sys.info()['nodename'])) {
   io$basedir <- "/hps/nobackup2/research/stegle/users/ricard/scnmt_gastrulation_TetChimera"
   io$atlas.basedir <- "/hps/nobackup2/research/stegle/users/ricard/gastrulation10x"
@@ -74,7 +75,10 @@ io$acc.diff <- paste0(io$basedir,"/acc/results/differential/feature_level/lineag
 io$multiome.metadata <- paste0(io$multiome.basedir,"/sample_metadata.txt.gz")
 io$multiome.differential <- paste0(io$multiome.basedir,"/results/differential")
 io$multiome.sce <- paste0(io$multiome.basedir,"/processed/SingleCellExperiment.rds")
-io$multiome.marker_peaks <- paste0(io$multiome.basedir,"/results/atac/archR/differential/PeakMatrix/markers/marker_peaks.txt.gz")  # this needs to be updated
+io$multiome.peak_metadata <- paste0(io$multiome.basedir,"/processed/atac/archR/PeakCalls/peak_metadata.tsv.gz")
+io$multiome.marker_peaks <- paste0(io$multiome.basedir,"/results/atac/archR/differential/pseudobulk/celltype/PeakMatrix/parsed/markers_filt.txt.gz")
+io$multiome.peak2genes.all <- paste0(io$multiome.basedir,"/results/atac/archR/peak_calling/peaks2genes/peaks2genes_all.txt.gz")
+io$multiome.peak2genes.nearest <- paste0(io$multiome.basedir,"/results/atac/archR/peak_calling/peaks2genes/peaks2genes_nearest.txt.gz")
 
 # PijuanSala2019 information
 io$atlas.metadata <- paste0(io$atlas.basedir,"/sample_metadata.txt.gz")

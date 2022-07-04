@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="mm10" hasGeneTrack="false" hasSequenceTrack="true" locus="chr1:138827066-138856535" nextAutoscaleGroup="3" version="8">
+    <Resources>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/Endothelium_E8.5_host_WT.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/Endothelium_E8.5_chimera_KO.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/Blood_progenitors_E8.5_host_WT.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/Blood_progenitors_E8.5_chimera_KO.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/late_Erythroid_E8.5_host_WT.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/early_Erythroid_E8.5_chimera_KO.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/Blood_progenitors_E8.5_host_WT.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/Blood_progenitors_E8.5_chimera_KO.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/late_Erythroid_E8.5_host_WT.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/early_Erythroid_E8.5_chimera_KO.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/Endothelium_E8.5_host_WT.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/Endothelium_E8.5_chimera_KO.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/gastrulation_multiome_10x/processed/atac/archR/GroupBigWigs/celltype/symbolic/Blood_progenitors_1.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/gastrulation_multiome_10x/processed/atac/archR/GroupBigWigs/celltype/symbolic/Endothelium.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/gastrulation_multiome_10x/processed/atac/archR/GroupBigWigs/celltype/symbolic/Erythroid2.bw" type="bw"/>
+<!--         <Resource path="/Users/rargelaguet/data/gastrulation_multiome_10x/processed/atac/archR/GroupBigWigs/celltype/symbolic/Primitive_Streak.bw" type="bw"/>
+        <Resource path="/Users/rargelaguet/data/gastrulation_multiome_10x/processed/atac/archR/GroupBigWigs/celltype/symbolic/Epiblast.bw" type="bw"/> -->
+        <Resource path="/Users/rargelaguet/data/gastrulation_multiome_10x/processed/atac/archR/PeakCalls/peaks_archR_macs2.bed.gz" type="bed"/>
+        <Resource index="https://s3.amazonaws.com/igv.org.genomes/mm10/ncbiRefSeq.sorted.txt.gz.tbi" name="Refseq Genes" path="https://s3.amazonaws.com/igv.org.genomes/mm10/ncbiRefSeq.sorted.txt.gz" type="refgene"/>
+    </Resources>
+    <Panel height="727" name="DataPanel" width="1903">
+
+        <Track attributeKey="Endothelium_WT.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,153,255" colorScale="ContinuousColorScale;0.0;-1.0;0.0;101.0;247,247,6;255,255,255;0,153,255" fontSize="10" height="41" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/Endothelium_E8.5_host_WT.bw" name="Endothelium WT (Met.)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="101.0" minimum="-1.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Endothelium_KO.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="255,51,51" colorScale="ContinuousColorScale;0.0;-1.0;0.0;101.0;247,247,6;255,255,255;255,51,51" fontSize="10" height="41" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/Endothelium_E8.5_chimera_KO.bw" name="Endothelium KO (Met.)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="101.0" minimum="-1.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Blood_progenitors_WT.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,153,255" colorScale="ContinuousColorScale;0.0;-1.0;0.0;101.0;247,247,6;255,255,255;0,153,255" fontSize="10" height="41" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/Blood_progenitors_E8.5_host_WT.bw" name="Blood progenitors WT (Met.)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="101.0" minimum="-1.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Blood_progenitors_KO.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="255,51,51" colorScale="ContinuousColorScale;0.0;-1.0;0.0;101.0;247,247,6;255,255,255;255,51,51" fontSize="10" height="41" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/Blood_progenitors_E8.5_chimera_KO.bw" name="Blood progenitors KO (Met.)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="101.0" minimum="-1.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="late_Erythroid_WT.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,153,255" colorScale="ContinuousColorScale;0.0;-1.0;0.0;101.0;247,247,6;255,255,255;0,153,255" fontSize="10" height="41" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/late_Erythroid_E8.5_host_WT.bw" name="Erythroids WT (Met.)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="101.0" minimum="-1.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="early_Erythroid_KO.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="255,51,51" colorScale="ContinuousColorScale;0.0;-1.0;0.0;101.0;247,247,6;255,255,255;255,51,51" fontSize="10" height="41" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/met/bigwig/celltype_class/early_Erythroid_E8.5_chimera_KO.bw" name="Erythroids KO (Met.)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="101.0" minimum="-1.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Endothelium_E8.5_host_WT.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,153,255" colorScale="ContinuousColorScale;0.0;0.0;0.0;100.0;255,255,255;255,255,255;0,153,255" fontSize="10" height="40" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/Endothelium_E8.5_host_WT.bw" name="Endothelium WT (Acc.)" renderer="LINE_PLOT" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Endothelium_E8.5_chimera_KO.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="255,0,51" colorScale="ContinuousColorScale;0.0;0.0;0.0;100.0;255,255,255;255,255,255;255,0,0" fontSize="10" height="40" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/Endothelium_E8.5_chimera_KO.bw" name="Endothelium KO (Acc.)" renderer="LINE_PLOT" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Blood_progenitors_E8.5_host_WT.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,153,255" colorScale="ContinuousColorScale;0.0;0.0;0.0;100.0;255,255,255;255,255,255;0,153,255" fontSize="10" height="40" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/Blood_progenitors_E8.5_host_WT.bw" name="Blood progenitors WT (Acc.)" renderer="LINE_PLOT" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="Blood_progenitors_E8.5_chimera_KO.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="255,0,51" colorScale="ContinuousColorScale;0.0;0.0;0.0;100.0;255,255,255;255,255,255;255,0,0" fontSize="10" height="40" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/Blood_progenitors_E8.5_chimera_KO.bw" name="Blood progenitors KO (Acc.)" renderer="LINE_PLOT" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="late_Erythroid_E8.5_host_WT.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,153,255" colorScale="ContinuousColorScale;0.0;0.0;0.0;100.0;255,255,255;255,255,255;0,153,255" fontSize="10" height="40" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/late_Erythroid_E8.5_host_WT.bw" name="Erythroids WT (Acc.)" renderer="LINE_PLOT" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="early_Erythroid_E8.5_chimera_KO.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="255,0,51" colorScale="ContinuousColorScale;0.0;0.0;0.0;100.0;255,255,255;255,255,255;255,0,0" fontSize="10" height="40" id="/Users/rargelaguet/data/tet_chimera_nmtseq/processed/acc/bigwig/celltype_class/early_Erythroid_E8.5_chimera_KO.bw" name="Erythroids WT (Acc.)" renderer="LINE_PLOT" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+<!--         <Track altColor="0,0,178" attributeKey="Epiblast.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="102,102,102" colorScale="ContinuousColorScale;0.0;0.6000000238418579;255,255,255;153,153,153" fontSize="10" height="41" id="/Users/rargelaguet/data/gastrulation_multiome_10x/processed_new/atac/archR/GroupBigWigs/Epiblast.bw" name="Epiblast (ATAC)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.6" minimum="0.0" type="LINEAR"/>
+        </Track> -->
+<!--         <Track altColor="0,0,178" attributeKey="Primitive_Streak.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="102,102,102" fontSize="10" height="41" id="/Users/rargelaguet/data/gastrulation_multiome_10x/processed_new/atac/archR/GroupBigWigs/Primitive_Streak.bw" name="Primitive Streak (ATAC)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.6" minimum="0.0" type="LINEAR"/>
+        </Track> -->
+        <Track altColor="0,0,178" attributeKey="Endothelium.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="102,102,102" fontSize="10" height="41" id="/Users/rargelaguet/data/gastrulation_multiome_10x/processed_new/atac/archR/GroupBigWigs/Endothelium.bw" name="Endothelium (ATAC)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.6" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" attributeKey="Blood_progenitors_1.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="102,102,102" fontSize="10" height="41" id="/Users/rargelaguet/data/gastrulation_multiome_10x/processed_new/atac/archR/GroupBigWigs/Blood_progenitors_1.bw" name="Blood progenitors (ATAC)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.6" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" attributeKey="Erythroid2.bw" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="102,102,102" fontSize="10" height="41" id="/Users/rargelaguet/data/gastrulation_multiome_10x/processed_new/atac/archR/GroupBigWigs/Erythroid2.bw" name="Erythroids (ATAC)" renderer="BAR_CHART" showDataRange="false" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.6" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="103" name="FeaturePanel" width="1903">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="false" visible="true"/>
+        <Track altColor="0,0,178" attributeKey="ATAC_peaks" clazz="org.broad.igv.track.FeatureTrack" color="0,0,0" fontSize="10" groupByStrand="false" id="/Users/rargelaguet/data/gastrulation_multiome_10x/processed/atac/archR/PeakCalls/peaks_archR_macs2.bed.gz" name="ATAC_peaks" visible="true"/>
+        <Track attributeKey="Refseq Genes" clazz="org.broad.igv.track.FeatureTrack" color="0,0,0" featureVisibilityWindow="80860750" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.genomes/mm10/ncbiRefSeq.sorted.txt.gz" name="Refseq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.8709677419354839"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

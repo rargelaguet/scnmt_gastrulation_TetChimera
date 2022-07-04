@@ -8,42 +8,54 @@ source(here::here("utils.R"))
 #####################
 
 # I/O ##
-io$outdir <- file.path(io$basedir,"results_new/rna/individual_genes"); dir.create(io$outdir, showWarnings = F)
+io$outdir <- file.path(io$basedir,"results/rna/individual_genes"); dir.create(io$outdir, showWarnings = F)
 
 ## Define options ##
 
 # Define cell types to plot
+# opts$celltypes = c(
+#   "Epiblast",
+#   "Primitive_Streak",
+#   "Caudal_epiblast",
+#   "PGC",
+#   "Anterior_Primitive_Streak",
+#   "Notochord",
+#   "Def._endoderm",
+#   "Gut",
+#   "Nascent_mesoderm",
+#   "Mixed_mesoderm",
+#   "Intermediate_mesoderm",
+#   "Caudal_Mesoderm",
+#   "Paraxial_mesoderm",
+#   "Somitic_mesoderm",
+#   "Pharyngeal_mesoderm",
+#   "Cardiomyocytes",
+#   "Allantois",
+#   "ExE_mesoderm",
+#   "Mesenchyme",
+#   "Haematoendothelial_progenitors",
+#   "Endothelium",
+#   "Blood_progenitors",
+#   "early_Erythroid",
+#   "late_Erythroid",
+#   "NMP",
+#   "Neurectoderm",
+#   "Neural_crest",
+#   "Forebrain_Midbrain_Hindbrain",
+#   "Spinal_cord",
+#   "Surface_ectoderm"
+# )
+
 opts$celltypes = c(
-  "Epiblast",
-  "Primitive_Streak",
-  "Caudal_epiblast",
-  "PGC",
-  "Anterior_Primitive_Streak",
-  "Notochord",
-  "Def._endoderm",
-  "Gut",
-  "Nascent_mesoderm",
-  "Mixed_mesoderm",
-  "Intermediate_mesoderm",
-  "Caudal_Mesoderm",
-  "Paraxial_mesoderm",
-  "Somitic_mesoderm",
-  "Pharyngeal_mesoderm",
-  "Cardiomyocytes",
-  "Allantois",
-  "ExE_mesoderm",
-  "Mesenchyme",
+  # "Pharyngeal_mesoderm",
+  # "ExE_mesoderm",
+  # "Mesenchyme",
   "Haematoendothelial_progenitors",
   "Endothelium",
   "Blood_progenitors",
-  "early_Erythroid",
-  "late_Erythroid",
-  "NMP",
-  "Neurectoderm",
-  "Neural_crest",
-  "Forebrain_Midbrain_Hindbrain",
-  "Spinal_cord",
-  "Surface_ectoderm"
+  "early_Erythroid"
+  # "late_Erythroid",
+  # "Surface_ectoderm"
 )
 
 # Define samples to plot
@@ -64,18 +76,17 @@ opts$samples <- c(
 ## Load sample metadata ##
 ##########################
 
-# io$metadata <- file.path(io$basedir,"results_new/rna/mapping/sample_metadata_after_mapping.txt.gz")
-
 sample_metadata <- fread(io$metadata) %>% 
   .[pass_rnaQC==TRUE & celltype.mapped%in%opts$celltypes & sample%in%opts$samples] %>%
   .[,sample:=factor(sample,levels=opts$samples)] %>%
   .[,celltype.mapped:=factor(celltype.mapped, levels=opts$celltypes)]
 
 sample_metadata %>% 
-  .[,ko:=ifelse(grepl("KO",sample),"TET TKO","WT")] %>%
-  .[ko_type=="crispr",ko:="TET TKO (crispr)"]
+  .[,ko:=ifelse(grepl("KO",sample),"Tet-TKO","WT")] %>%
+  .[ko_type=="crispr",ko:="Tet-TKO (crispr)"]
 
 table(sample_metadata$ko)
+table(sample_metadata$celltype.mapped)
 
 # Only consider cell types with sufficient observations in both KO and WT cells
 celltypes.to.plot <- sample_metadata[,.(N=.N),by=c("ko","celltype.mapped")] %>% .[N>=10] %>% .[,.N,by="celltype.mapped"] %>% .[N>1,celltype.mapped]
@@ -95,7 +106,7 @@ sce <- load_SingleCellExperiment(io$rna.sce, cells=sample_metadata$id_rna, norma
 ## Plot ##
 ##########
 
-genes.to.plot <- c("Erg")
+genes.to.plot <- c("Cited4","Runx1","Klf1")
 # genes.to.plot <- fread("/Users/argelagr/data/tet_chimera_nmtseq/results_new/rna/differential/marker_genes/differential_marker_genes.tsv.gz")$gene %>% unique
 # genes.to.plot <- c("Lefty1","Cd34","Tmsb4x","Fgf3","Spata7","Cer1","Spink1","Dppa4","Dppa5a","Prc1","Lefty2","Ube2c","Hba-x","Hbb-y","Hba-a1","Hbb-bh1")
 # genes.to.plot <- c("Vegfa","Vegfb","Vegfc","Vegfd","Kdr","Flt1","Tal1","Runx1","Etv2)
@@ -126,8 +137,8 @@ for (i in 1:length(genes.to.plot)) {
       geom_boxplot(width=0.5, outlier.shape=NA, alpha=0.8) +
       stat_summary(fun.data = give.n, geom = "text", size=3) +
       # geom_jitter(size=2, shape=21, stroke=0.2, alpha=0.5) +
-      # scale_fill_manual(values=opts$colors) +
-      scale_fill_brewer(palette="Dark2") +
+      scale_fill_manual(values=opts$class.colors) +
+      # scale_fill_brewer(palette="Dark2") +
       facet_wrap(~celltype.mapped, scales="fixed") +
       theme_classic() +
       labs(x="",y=sprintf("%s expression",gene)) +
@@ -138,12 +149,12 @@ for (i in 1:length(genes.to.plot)) {
         axis.text.y = element_text(colour="black",size=rel(0.9)),
         axis.ticks.x = element_blank(),
         axis.title.y = element_text(colour="black",size=rel(1.0)),
-        legend.position = "top",
+        legend.position = "none",
         legend.title = element_blank(),
         legend.text = element_text(size=rel(1.0))
       )
     
-      pdf(sprintf("%s/%s_per_class.pdf",io$outdir,gene), width=8, height=7)
+      pdf(sprintf("%s/%s_per_class.pdf",io$outdir,gene), width=6, height=8)
       print(p)
       dev.off()
       

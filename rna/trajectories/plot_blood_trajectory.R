@@ -6,15 +6,15 @@ source(here::here("utils.R"))
 ## Define settings ##
 #####################
 
-io$trajectory.dir <- file.path(io$basedir,"results_new/rna/trajectories/blood")
-io$outdir <- file.path(io$basedir,"results_new/rna/trajectories/blood/pdf")
+io$trajectory.dir <- file.path(io$basedir,"results/rna/trajectories/blood")
+io$outdir <- file.path(io$basedir,"results/rna/trajectories/blood/pdf")
 dir.create(io$outdir, showWarnings=F)
 
 ##########################
 ## Load sample metadata ##
 ##########################
 
-sample_metadata.dt <- fread(file.path(io$trajectory.dir,"blood_sample_metadata.txt.gz")) %>%
+cell_metadata.dt <- fread(file.path(io$trajectory.dir,"blood_sample_metadata.txt.gz")) %>%
   .[,class2:=ifelse(grepl("WT",class),"WT","TET-TKO")] %>% .[,class:=factor(class,levels=c("WT","TET-TKO"))]
 
 #####################
@@ -29,7 +29,7 @@ trajectory.dt <- fread(file.path(io$trajectory.dir,"blood_trajectory.txt.gz")) %
 ## Load Met/Acc ##
 ##################
 
-global_rates_metacc.dt <- sample_metadata.dt[,c("cell","id_rna","met_rate","acc_rate")]# %>% 
+global_rates_metacc.dt <- cell_metadata.dt[,c("cell","id_rna","met_rate","acc_rate")]# %>% 
   # setnames(c("cell","CG","GC"))# %>%
   # melt(id.vars="cell", variable.name="context", value.name="global_rate")
 
@@ -63,16 +63,16 @@ global_rates_metacc.dt[,met_rate_imputed:=smoother_aggregate_nearest_nb(mat=mtx,
 ## Load RNA expression ##
 #########################
 
-sce <- load_SingleCellExperiment(io$rna.sce, normalise = T, cells=sample_metadata.dt$id_rna)
+sce <- load_SingleCellExperiment(io$rna.sce, normalise = T, cells=cell_metadata.dt$id_rna)
 
 # Add sample metadata as colData
-colData(sce) <- sample_metadata.dt %>% tibble::column_to_rownames("id_rna") %>% DataFrame
+colData(sce) <- cell_metadata.dt %>% tibble::column_to_rownames("id_rna") %>% DataFrame
 
 ######################
 ## Plot 2D manifold ##
 ######################
 
-to.plot <- trajectory.dt %>% merge(sample_metadata.dt, by="id_rna")
+to.plot <- trajectory.dt %>% merge(cell_metadata.dt, by="id_rna")
 
 p <- ggplot(to.plot, aes(x=V1, y=V2, fill=celltype)) +
   # geom_point(size=3, shape=21, stroke=0.25) +
@@ -95,7 +95,7 @@ dev.off()
 ########################
 
 to.plot <- trajectory.dt %>% 
-  merge(sample_metadata.dt, by="id_rna") %>%
+  merge(cell_metadata.dt, by="id_rna") %>%
   merge(data.table(id_rna = colnames(sce), expr = logcounts(sce)["Hba-a1",]), by="id_rna")
 
 p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
@@ -140,7 +140,7 @@ dev.off()
 ## Overlay gene expression over the 2D manifold ##
 ##################################################
 
-genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3")
+genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3","Uhrf1")
 
 for (i in genes.to.plot) {
   
@@ -173,7 +173,7 @@ for (i in genes.to.plot) {
   
 to.plot <- global_rates_metacc.dt %>% 
   merge(trajectory.dt, by="id_rna") %>% 
-  merge(sample_metadata.dt[,c("id_rna","class")],by="id_rna")
+  merge(cell_metadata.dt[,c("id_rna","class")],by="id_rna")
 
 # Just for visualisation purposes
 max.meth <- 83
@@ -201,14 +201,15 @@ dev.off()
 # genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3")
 genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3","Uhrf1")
 
-tmp <- to.plot %>% setorder(-PC1) %>% .[,.SD[1:100],by="gene"] %>% .[,.(PC1=max(PC1), expr=mean(expr)),by="gene"]
-               
+tmp <- trajectory.dt %>% merge(cell_metadata.dt[,c("id_rna","class","celltype")],by="id_rna")
+
 to.plot <- data.table(as.matrix(logcounts(sce)[genes.to.plot,]), keep.rownames = T) %>%
   setnames("rn","gene") %>%
   melt(id.vars="gene", variable.name="id_rna", value.name="expr") %>%
-  merge(trajectory.dt, by="id_rna") %>% 
-  merge(sample_metadata.dt[,c("id_rna","class","celltype")],by="id_rna") %>%
+  merge(tmp,by="id_rna") %>%
   .[,gene_class:=ifelse(grepl("Dnmt",gene),"DNMT","TET")]
+
+to.plot.text <- to.plot %>% setorder(-PC1) %>% .[,.SD[1:100],by="gene"] %>% .[,.(PC1=max(PC1), expr=mean(expr)),by="gene"]
 
 p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
   # geom_point(aes(fill=celltype), size=2, shape=21, stroke=0.1) +
@@ -216,7 +217,7 @@ p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
   geom_rug(aes(color=celltype), sides="b") +
   # facet_wrap(~gene_class, nrow=1) +
   coord_cartesian(ylim=c(0,8.5)) +
-  ggrepel::geom_text_repel(aes_string(label="gene"), data=tmp) +
+  ggrepel::geom_text_repel(aes_string(label="gene"), data=to.plot.text) +
   scale_color_manual(values=opts$celltype.colors[unique(to.plot$celltype)]) +
   # scale_fill_manual(values=opts$celltype.colors) +
   # guides(fill="none") +
@@ -229,7 +230,7 @@ p <- ggplot(to.plot, aes(x=PC1, y=expr)) +
     axis.ticks.x = element_blank()
   )
 
-pdf(file.path(io$outdir,"pseudotime_coloured_by_dnmt_tet_expr.pdf"), width=5, height=4)
+pdf(file.path(io$outdir,"pseudotime_coloured_by_dnmt_tet_expr_v2.pdf"), width=5, height=4)
 print(p)
 dev.off()
 
@@ -240,7 +241,7 @@ dev.off()
 
 to.plot <- global_rates_metacc.dt %>% 
   merge(trajectory.dt, by="id_rna") %>% 
-  merge(sample_metadata.dt[,c("id_rna","class","class2","celltype")],by="id_rna")
+  merge(cell_metadata.dt[,c("id_rna","class","class2","celltype")],by="id_rna")
 
 # Just for visualisation purposes
 max.meth <- 80

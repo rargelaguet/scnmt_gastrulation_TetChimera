@@ -8,6 +8,9 @@ source(here::here("utils.R"))
 ## Define settings ##
 #####################
 
+# I/O
+io$bisulfite_conversion <- file.path(io$basedir,"original/conversion.tsv.gz") 
+
 # Options
 opts$context <- "CG"
 
@@ -115,3 +118,30 @@ dev.off()
 ################################
 ## Bisulfite conversion rates ##
 ################################
+
+bisulfite_conversion_rates.dt <- fread(io$bisulfite_conversion) %>%
+  .[,cell:=gsub("_L00.","",cell)] %>% 
+  merge(cell_metadata.dt[pass_metQC==T,c("cell","method","stage","class","sample")])
+
+unique(bisulfite_conversion_rates.dt$cell)
+
+to.plot <- bisulfite_conversion_rates.dt[,.(conversion=mean(conversion), sd=sd(conversion)), by=c("class","sample")]
+
+p <- ggplot(to.plot, aes(x=sample, y=conversion, fill=class)) +
+  # ggrastr::geom_jitter_rast(size=1, alpha=0.65, width=0.1, shape=21, stroke=0.15) +
+  geom_bar(position=position_dodge(), stat="identity", color="black") +
+  geom_errorbar(aes(ymin=conversion-sd, ymax=conversion+sd), width=0.4, colour="black", alpha=0.9, size=0.5) +
+  scale_fill_manual(values=opts$class.colors[unique(bisulfite_conversion_rates.dt$class)]) + 
+  labs(x="", y="Bisulfite conversion rate (%)") +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    legend.title = element_blank(),
+    axis.text.y = element_text(colour="black",size=rel(1)),
+    axis.text.x = element_text(colour="black",size=rel(0.75), angle=90, hjust=1, vjust=0.5),
+    axis.title = element_blank()
+  )
+
+pdf(file.path(io$outdir,"bisulfite_conversion_rates.pdf"), width=5.5, height=6)
+print(p)
+dev.off()
