@@ -199,7 +199,8 @@ dev.off()
 ####################################################
 
 # genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3")
-genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3","Uhrf1")
+# genes.to.plot <- c("Dnmt1","Dnmt3a","Dnmt3b","Tet1","Tet2","Tet3","Uhrf1")
+genes.to.plot <- c("Runx1","Gata1","Klf1")
 
 tmp <- trajectory.dt %>% merge(cell_metadata.dt[,c("id_rna","class","celltype")],by="id_rna")
 

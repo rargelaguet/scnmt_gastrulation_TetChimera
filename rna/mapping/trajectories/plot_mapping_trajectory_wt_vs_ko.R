@@ -1,4 +1,4 @@
-here::i_am("rna/mapping/trajectories/plot_mapping_dimred.R")
+here::i_am("rna/mapping/trajectories/plot_mapping_trajectory_wt_vs_ko.R")
 
 source(here::here("settings.R"))
 source(here::here("rna/mapping/analysis/plot_utils.R"))
@@ -17,7 +17,7 @@ args <- p$parse_args(commandArgs(TRUE))
 
 ## START TEST ##
 args$query_metadata <- file.path(io$basedir,"results/rna/mapping/trajectories/blood/sample_metadata_after_mapping.txt.gz")
-args$atlas_metadata <- file.path(io$atlas.basedir,"results/trajectories/blood_scanpy/blood_sample_metadata.txt.gz")
+args$atlas_metadata <- file.path(io$atlas.basedir,"results/trajectories/blood_precomputed/blood_trajectory.txt.gz")
 args$outdir <- file.path(io$basedir,"results/rna/mapping/trajectories/blood/pdf")
 ## END TEST ##
 
@@ -49,15 +49,16 @@ sample_metadata <- fread(args$query_metadata) %>%
   .[,class2:=ifelse(grepl("WT",class),"WT","Tet-TKO")] %>%
   .[!is.na(closest.cell)]
 
-# sample_metadata[class2=="Tet-TKO" & global_mapping=="Endothelium"]
-################
-## Load atlas ##
-################
+
+########################################
+## Load atlas metadata and trajectory ##
+########################################
 
 # Load atlas trajectory
-atlas_trajectory.dt <- fread(file.path(io$atlas.basedir,"results/trajectories/blood_scanpy/blood_trajectory.txt.gz")) %>% 
-  setnames(c("FA1","FA2"),c("V1","V2"))
-meta_atlas <- fread(args$atlas_metadata)[,c("cell","stage","celltype")] %>% merge(atlas_trajectory.dt, by="cell")
+meta_atlas <- fread(args$atlas_metadata)
+
+atlas_trajectory.dt <- fread(file.path(io$atlas.basedir,"results/trajectories/blood_scanpy/blood_trajectory.txt.gz"))# %>% 
+# setnames(c("FA1","FA2"),c("V1","V2"))
 
 # Subset cells to speed up plotting
 if (opts$subset_atlas_cells) {
@@ -66,6 +67,23 @@ if (opts$subset_atlas_cells) {
     meta_atlas %>% .[!cell%in%unique(sample_metadata$closest.cell)] %>% .[sample.int(n=nrow(.), size=nrow(.)/1.5)]
   )
 }
+
+################
+## Load atlas ##
+################
+
+# # Load atlas trajectory
+# atlas_trajectory.dt <- fread(file.path(io$atlas.basedir,"results/trajectories/blood_scanpy/blood_trajectory.txt.gz"))# %>% 
+#   # setnames(c("FA1","FA2"),c("V1","V2"))
+# meta_atlas <- fread(args$atlas_metadata)[,c("cell","stage","celltype")] %>% merge(atlas_trajectory.dt, by="cell")
+# 
+# # Subset cells to speed up plotting
+# if (opts$subset_atlas_cells) {
+#   meta_atlas <- rbind(
+#     meta_atlas[cell%in%unique(sample_metadata$closest.cell)],
+#     meta_atlas %>% .[!cell%in%unique(sample_metadata$closest.cell)] %>% .[sample.int(n=nrow(.), size=nrow(.)/1.5)]
+#   )
+# }
 
 ###############################
 ## Plot one sample at a time ##
@@ -134,9 +152,9 @@ to.plot <- meta_atlas %>% copy %>%
   .[,mapped:=plyr::mapvalues(mapped, from = c("0","-10","10"), to = c("Atlas","WT","Tet-TKO"))] %>% setorder(mapped)
 
 p <- plot.dimred.wtko(to.plot, wt.label = "Tet-TKO", ko.label = "WT", nomapped.label = "Atlas") +
-  theme(legend.position = "top", axis.line = element_blank())
+  theme(legend.position = "none", axis.line = element_blank())
 
-pdf(sprintf("%s/per_class/umap_mapped_WT_and_KO.pdf",args$outdir), width=5, height=6)
+pdf(sprintf("%s/per_class/umap_mapped_WT_and_KO.pdf",args$outdir), width=6, height=5)
 print(p)
 dev.off()
 
