@@ -28,15 +28,13 @@ Key results
 Data
 -------
 Raw data is available at [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE204908).
-Parsed data can be downloaded in progress....
-
-<!-- The raw data is accessible at GEO ([GSEXXXX](XXXX)). 
-The parsed data can be downloaded [here](XXXX) -->
+Parsed data can be downloaded [here](https://drive.google.com/drive/folders/1G6gm20L48eaL5Xfw13wpFakyE0SSaUvh?usp=sharing)
 
 
 Shiny app
 --------
-We provide a shiny app that allows the user to explore the Tet-TKO scRNA-seq results [here](https://www.bioinformatics.babraham.ac.uk/shiny/tet_ko_embryo_scrna/). Note that we currently do not have a shiny app to explore the scNMT-seq TET-TKO results.
+<!-- We provide a shiny app that allows the user to explore the Tet-TKO scRNA-seq results [here](https://www.bioinformatics.babraham.ac.uk/shiny/tet_ko_embryo_scrna/). Note that we currently do not have a shiny app to explore the scNMT-seq TET-TKO results. -->
+No longer hosted online, please contact Ricard if you are interested in using it.
 
 Contact
 -------
